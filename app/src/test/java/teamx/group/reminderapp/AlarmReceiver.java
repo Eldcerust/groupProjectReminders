@@ -31,7 +31,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context,"default")
                 .setSmallIcon(R.raw.aperture)
-                .setContentTitle("Please check reminder.")
+                .setContentTitle(/*will be decided later*/)
                 .setContentText(/* will require further formatting of text that will be required to be displayed*/)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(forThisIntent)

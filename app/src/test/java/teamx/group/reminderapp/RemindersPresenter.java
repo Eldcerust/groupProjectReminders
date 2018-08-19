@@ -9,26 +9,110 @@ import android.os.Build;
 
 public class RemindersPresenter {
     ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
+    public boolean done=false;
     //function to load up and store reminders to sql
 
-    public void create_reminder(String reminder_name, Date date_time, VoiceProfile voice_profile){
+    public void create_reminder(String reminder_name, Date date_time, VoiceProfileModel voice_profile){
         RemindersModel new_reminder=new RemindersModel(reminder_name,date_time,voice_profile);
-        reminder_list.add(new_reminder);
-        set_alarm_manager(new_reminder);
+        this.reminder_list.add(new_reminder);
+        this.sort_reminders();
+        this.set_alarm_manager();
     }
 
     public RemindersModel get_reminder(Integer position_of_reminder){
-        return(reminder_list.get(position_of_reminder));
+        return(this.reminder_list.get(position_of_reminder));
     }
 
-    public void snooze_reminder(RemindersModel reminder_model){
+    public void snooze_reminder(RemindersModel reminder_model, int minutes_snoozed){
         //requires to access the presenter from alarm manager models
         //fuse the alarm mgr model?
     }
 
-    public void set_alarm_manager(RemindersModel reminders_model){
+    public void set_alarm_manager(){
         // send intent to alarm receiver, let alarm receiver determine the api build of the app
-}
+        // code used to set alarmManager for one set of alarm to the nearest time?
+        // requires proper sorting of alarms?
+    }
+
+    public void change_name(int element_wanted,String string_name){
+        RemindersModel temporary_reminder=this.reminder_list.get(element_wanted);
+        temporary_reminder.set_reminder_name(string_name);
+        this.sort_reminders();
+        this.set_alarm_manager();
+        this.reminder_list.set(element_wanted,temporary_reminder);
+    }
+
+    public void sort_reminders(){
+        this.quick_sort_helper(this.reminder_list,0,this.reminder_list.size()-1);
+    }
+
+    public void quick_sort_helper(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
+        if(left_index<right_index){
+            int split_point=this.quick_sort_partition(reminder_list,left_index,right_index);
+
+            this.quick_sort_helper(reminder_list,left_index,split_point-1);
+            this.quick_sort_helper(reminder_list,split_point+1,right_index);
+        }
+
+    }
+
+    public int quick_sort_partition(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
+        Date pivot_value=reminder_list.get(left_index).get_reminder_date_time();
+
+        int left_mark=left_index+1;
+        int right_mark=right_index;
+
+        done=false;
+
+        while(!done){
+            while((left_mark<=right_mark) && (compare_date(reminder_list.get(left_index).get_reminder_date_time(),pivot_value,true))){
+                left_mark+=1;
+            }
+
+            while((compare_date(pivot_value,reminder_list.get(right_mark).get_reminder_date_time(),false)) && (right_mark>=left_mark)){
+                right_mark-=1;
+            }
+
+            if(right_mark<left_mark){
+                done=true;
+            } else {
+                RemindersModel temp_model=reminder_list.get(left_mark);
+                RemindersModel temp_model_two=reminder_list.get(right_mark);
+                reminder_list.set(left_mark,temp_model_two);
+                reminder_list.set(right_mark,temp_model);
+
+                this.reminder_list=reminder_list;
+            }
+        }
+
+        RemindersModel temp_model=reminder_list.get(left_index);
+        RemindersModel temp_model_two=reminder_list.get(right_index);
+
+        reminder_list.set(left_index,temp_model_two);
+        reminder_list.set(right_index,temp_model);
+
+        this.reminder_list=reminder_list;
+
+        return(right_mark);
+
+    }
+
+    public boolean compare_date(Date date_first, Date date_second,Boolean direction){
+        //direction is used to correct the orientation of equals than. True is for date_first is less than or equals to date_second and false is vice versa
+        //return true if first value is larger, else, false if second value is larger
+        if(date_first.compareTo(date_second)>0){
+            return(false);
+        }else if(date_first.compareTo(date_second)<0){
+            return(true);
+        }else if(date_first.compareTo(date_second)==0){
+            if(direction) {
+                return(false);
+            } else {
+                return(true);
+            }
+        }
+        return Boolean.parseBoolean(null);
+    }
 
 
 }
