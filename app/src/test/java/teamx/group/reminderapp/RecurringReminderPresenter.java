@@ -23,13 +23,14 @@ public class RecurringReminderPresenter {
         //also requires to check the reminders option for micro reminding
     }
 
-    public void change_name(int element_wanted,String name_to_change){
+    /*public void change_name(int element_wanted,String name_to_change){
         this.reminder_presenter_wrap.change_name(element_wanted,name_to_change);
     }
 
     public void snooze_reminder(int elemented_wanted,int time_to_snooze){
 
-    }
+    }*/
+    // is these functions even needed since the classic presenter wrap is the one in control of snoozing and changing the name of the reminder?
 
 
 }

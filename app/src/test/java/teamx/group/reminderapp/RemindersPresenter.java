@@ -1,5 +1,7 @@
 package teamx.group.reminderapp;
 
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 
 import java.util.ArrayList;
@@ -33,17 +35,26 @@ public class RemindersPresenter {
         //fuse the alarm mgr model?
     }
 
-    public void set_alarm_manager(){
+    public void set_alarm_manager(Context main_context,RemindersModel reminders_model){
+        Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class); //needs intent from view class or main activity?
+
+        intent.putExtra("ReminderNameAndTime",String.valueOf(reminders_model.get_reminder_name()+","+String.valueOf(reminders_model.get_reminder_date_time().getTime())));
+
+        PendingIntent pending_intent
+        // put reminders name and time for the reminder
+        // how to snooze reminders?
+
+
         // send intent to alarm receiver, let alarm receiver determine the api build of the app
         // code used to set alarmManager for one set of alarm to the nearest time?
         // requires proper sorting of alarms?
+        // what happens if two different reminders have the same time, which means that at least one of the reminders are not detected? implement a delta negligible of 60 seconds or else two reminders are wrapped as one reminders for notification
     }
 
     public void change_name(int element_wanted,String string_name){
         RemindersModel temporary_reminder=this.reminder_list.get(element_wanted);
         temporary_reminder.set_reminder_name(string_name);
         this.sort_reminders();
-        this.set_alarm_manager();
         this.reminder_list.set(element_wanted,temporary_reminder);
     }
 
