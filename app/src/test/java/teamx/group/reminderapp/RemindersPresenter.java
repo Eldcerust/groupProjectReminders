@@ -44,6 +44,7 @@ public class RemindersPresenter {
 
     public void sort_reminders(){
         this.quick_sort_helper(this.reminder_list,0,this.reminder_list.size()-1);
+        //move this code in to other place/presenter s
     }
 
     public void quick_sort_helper(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
