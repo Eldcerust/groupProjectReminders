@@ -3,6 +3,7 @@ package teamx.group.reminderapp;
 import android.content.Intent;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import android.content.BroadcastReceiver;
 import android.os.Build;
@@ -12,7 +13,7 @@ public class RemindersPresenter {
     public boolean done=false;
     //function to load up and store reminders to sql
 
-    public void create_reminder(String reminder_name, Date date_time, VoiceProfileModel voice_profile){
+    public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
         RemindersModel new_reminder=new RemindersModel(reminder_name,date_time,voice_profile);
         this.reminder_list.add(new_reminder);
         this.sort_reminders();
@@ -24,6 +25,10 @@ public class RemindersPresenter {
     }
 
     public void snooze_reminder(RemindersModel reminder_model, int minutes_snoozed){
+        Calendar reminder_model_time=reminder_model.get_reminder_date_time();
+        reminder_model_time.add(Calendar.MINUTE,1);
+        this.sort_reminders();
+        this.set_alarm_manager();
         //requires to access the presenter from alarm manager models
         //fuse the alarm mgr model?
     }
@@ -58,7 +63,7 @@ public class RemindersPresenter {
     }
 
     public int quick_sort_partition(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
-        Date pivot_value=reminder_list.get(left_index).get_reminder_date_time();
+        Calendar pivot_value=reminder_list.get(left_index).get_reminder_date_time();
 
         int left_mark=left_index+1;
         int right_mark=right_index;
@@ -98,7 +103,7 @@ public class RemindersPresenter {
 
     }
 
-    public boolean compare_date(Date date_first, Date date_second,Boolean direction){
+    public boolean compare_date(Calendar date_first, Calendar date_second,Boolean direction){
         //direction is used to correct the orientation of equals than. True is for date_first is less than or equals to date_second and false is vice versa
         //return true if first value is larger, else, false if second value is larger
         if(date_first.compareTo(date_second)>0){
