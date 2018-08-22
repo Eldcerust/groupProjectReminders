@@ -8,6 +8,7 @@ public class VoiceProfileModel {
     private Color color_profile;
     private Boolean tts_boolean;
     private File media_file;
+    private String profile_name;
 
     public VoiceProfileModel(Color color_profile,Boolean tts_boolean,File media_file){
         this.color_profile=color_profile;

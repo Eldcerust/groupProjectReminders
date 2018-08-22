@@ -39,5 +39,11 @@ public class VoiceProfilePresenter {
         this.voice_profile_lists.set(element_wanted,temporary_reminder_model);
     }
 
+    public VoiceProfileModel return_voice_profile(String name_of_profile){
+        for(int i=0;i<voice_profile_lists.size();i++){
+            this.voice_profile_lists.get(0).get_color_profile_name()
+        }
+    }
+
 
 }

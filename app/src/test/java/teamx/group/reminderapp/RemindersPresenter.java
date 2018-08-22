@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import android.content.BroadcastReceiver;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 
 public class RemindersPresenter {
@@ -34,7 +36,37 @@ public class RemindersPresenter {
     }
 
     public ArrayList<RemindersModel> load_reminders_from_sql (){
+        SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
+        Cursor c = my_database.rawQuery("SELECT * FROM BasicReminders ORDER BY year,month,date,day,hour,minute",null);
+        //determine structure
+        //title,year,month,date,day,hour,minute,
+        //create reminder and insert one by one?
+        int count=0;
 
+        int title_index=c.getColumnIndex("title");
+        int hour_index=c.getColumnIndex("hour");
+        int minute_index=c.getColumnIndex("minute");
+        int year_index=c.getColumnIndex("year");
+        int month_index=c.getColumnIndex("month");
+        int day_index=c.getColumnIndex("year");
+        int voice_profile_index=c.getColumnIndex("voiceProfile");
+
+        c.moveToFirst();
+
+        while(c!=null){
+            String reminder_name=c.getString(title_index);
+
+            Calendar date_time=Calendar.getInstance();
+            date_time.set(Calendar.DAY_OF_MONTH,Integer.valueOf(c.getString(day_index)));
+            date_time.set(Calendar.MONTH,Integer.valueOf(c.getString(month_index)));
+            date_time.set(Calendar.YEAR,Integer.valueOf(c.getString(year_index)));
+            date_time.set(Calendar.HOUR_OF_DAY,Integer.valueOf(c.getString(hour_index)));
+            date_time.set(Calendar.MINUTE,Integer.valueOf(c.getString(minute_index)));
+            date_time.set(Calendar.SECOND,0);
+            date_time.set(Calendar.MILLISECOND,0);
+
+            String voice_profile_name=c.getString(voice_profile_index);
+        }
     }
 
     public void save_reminders_sql(ArrayList<RemindersModel> reminders_lists){
