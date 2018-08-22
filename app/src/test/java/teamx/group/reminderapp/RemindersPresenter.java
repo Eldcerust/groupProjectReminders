@@ -1,5 +1,6 @@
 package teamx.group.reminderapp;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -13,34 +14,55 @@ import android.os.Build;
 public class RemindersPresenter {
     ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
     public boolean done=false;
+    Context from_main;
     //function to load up and store reminders to sql
+
+    public RemindersPresenter(Context context){
+        this.from_main=context;
+    }
 
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
         RemindersModel new_reminder=new RemindersModel(reminder_name,date_time,voice_profile);
         this.reminder_list.add(new_reminder);
         this.sort_reminders();
-        this.set_alarm_manager();
+        this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
+        // in other words, both has to be detected and displayed in a manner of having "2 reminders"
     }
 
     public RemindersModel get_reminder(Integer position_of_reminder){
         return(this.reminder_list.get(position_of_reminder));
     }
 
+    public ArrayList<RemindersModel> load_reminders_from_sql (){
+
+    }
+
+    public void save_reminders_sql(ArrayList<RemindersModel> reminders_lists){
+
+    }
+
     public void snooze_reminder(RemindersModel reminder_model, int minutes_snoozed){
         Calendar reminder_model_time=reminder_model.get_reminder_date_time();
         reminder_model_time.add(Calendar.MINUTE,1);
         this.sort_reminders();
-        this.set_alarm_manager();
+        this.set_alarm_manager(this.from_main,101);
         //requires to access the presenter from alarm manager models
         //fuse the alarm mgr model?
     }
 
-    public void set_alarm_manager(Context main_context,RemindersModel reminders_model){
+    public void set_alarm_manager(Context main_context,int notification_count){
+        RemindersModel reminders_model=fetch_earliest_reminder();
+        //check conditionally if the alarm is even nearer than previous alarm, lest ignore
+        AlarmManager alarm_manager=(AlarmManager)main_context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        //does alarm manager work if created under the pretext from a different class from the views of the app?
+
         Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class); //needs intent from view class or main activity?
 
         intent.putExtra("ReminderNameAndTime",String.valueOf(reminders_model.get_reminder_name()+","+String.valueOf(reminders_model.get_reminder_date_time().getTime())));
 
-        PendingIntent pending_intent
+        PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
         // put reminders name and time for the reminder
         // how to snooze reminders?
 
@@ -49,6 +71,26 @@ public class RemindersPresenter {
         // code used to set alarmManager for one set of alarm to the nearest time?
         // requires proper sorting of alarms?
         // what happens if two different reminders have the same time, which means that at least one of the reminders are not detected? implement a delta negligible of 60 seconds or else two reminders are wrapped as one reminders for notification
+    }
+
+    public RemindersModel fetch_earliest_reminder(){
+        RemindersModel temp_model=this.reminder_list.get(0);
+        Calendar temp_cal=temp_model.get_reminder_date_time();
+        temp_cal.set(Calendar.SECOND,0);
+        temp_cal.set(Calendar.MILLISECOND,0);
+        int count=1;
+        while(true){
+            Calendar temp_cal_later=this.reminder_list.get(count).get_reminder_date_time();
+            temp_cal_later.set(Calendar.SECOND,0);
+            temp_cal_later.set(Calendar.MILLISECOND,0);
+            if(temp_cal.compareTo(temp_cal_later)==0) {
+                temp_model.set_reminder_name(String.valueOf(count) + " reminders");
+                count += 1;
+            } else {
+                break;
+            }
+        }
+        return temp_model;
     }
 
     public void change_name(int element_wanted,String string_name){
