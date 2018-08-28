@@ -10,12 +10,11 @@ public class RemindersModel {
     private UUID reminder_UUID;
     private VoiceProfileModel reminder_voice_profile; //VoiceProfileModel used, pulled from VoiceProfilePresenter
 
-    public RemindersModel(String reminder_name,Calendar reminder_date_time,VoiceProfileModel reminder_voice_profile){
+    public RemindersModel(String reminder_name,Calendar reminder_date_time){
         //this is the onCreate(constructor) of the class
         this.reminder_name=reminder_name;
         this.reminder_date_time=reminder_date_time;
         this.reminder_UUID=UUID.randomUUID();
-        this.reminder_voice_profile=reminder_voice_profile;
     }
 
     public void set_reminder_name(String string){this.reminder_name=string;}

@@ -8,23 +8,40 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
+
 import android.content.BroadcastReceiver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
+import android.speech.tts.Voice;
 
 public class RemindersPresenter {
-    ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
+    private ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
     public boolean done=false;
-    Context from_main;
+    private Context from_main;
+    private VoiceProfilePresenter presenter_for_presets;
+
     //function to load up and store reminders to sql
 
-    public RemindersPresenter(Context context){
-        this.from_main=context;
+    public RemindersPresenter(Context context,VoiceProfilePresenter presenter_model){
+        this.from_main=context.getApplicationContext();
+        this.presenter_for_presets=presenter_model;
+        this.reminder_list=load_reminders_from_sql();
     }
 
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
-        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time,voice_profile);
+        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time);
+        new_reminder.set_reminder_voice_profile(voice_profile);
+        this.reminder_list.add(new_reminder);
+        this.sort_reminders();
+        this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
+        // in other words, both has to be detected and displayed in a manner of having "2 reminders"
+    }
+
+    public void create_reminder(String reminder_name, Calendar date_time){
+        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time);
         this.reminder_list.add(new_reminder);
         this.sort_reminders();
         this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
@@ -38,6 +55,7 @@ public class RemindersPresenter {
     public ArrayList<RemindersModel> load_reminders_from_sql (){
         SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
         Cursor c = my_database.rawQuery("SELECT * FROM BasicReminders ORDER BY year,month,date,day,hour,minute",null);
+        ArrayList<RemindersModel> reminders_list_for_save=new ArrayList<RemindersModel>();
         //determine structure
         //title,year,month,date,day,hour,minute,
         //create reminder and insert one by one?
@@ -48,29 +66,72 @@ public class RemindersPresenter {
         int minute_index=c.getColumnIndex("minute");
         int year_index=c.getColumnIndex("year");
         int month_index=c.getColumnIndex("month");
-        int day_index=c.getColumnIndex("year");
+        int day_index=c.getColumnIndex("day");
         int voice_profile_index=c.getColumnIndex("voiceProfile");
 
         c.moveToFirst();
 
-        while(c!=null){
-            String reminder_name=c.getString(title_index);
+        while(c!=null) {
+            String reminder_name = c.getString(title_index);
 
-            Calendar date_time=Calendar.getInstance();
-            date_time.set(Calendar.DAY_OF_MONTH,Integer.valueOf(c.getString(day_index)));
-            date_time.set(Calendar.MONTH,Integer.valueOf(c.getString(month_index)));
-            date_time.set(Calendar.YEAR,Integer.valueOf(c.getString(year_index)));
-            date_time.set(Calendar.HOUR_OF_DAY,Integer.valueOf(c.getString(hour_index)));
-            date_time.set(Calendar.MINUTE,Integer.valueOf(c.getString(minute_index)));
-            date_time.set(Calendar.SECOND,0);
-            date_time.set(Calendar.MILLISECOND,0);
+            Calendar date_time = Calendar.getInstance();
+            date_time.set(Calendar.DAY_OF_MONTH, Integer.valueOf(c.getString(day_index)));
+            date_time.set(Calendar.MONTH, Integer.valueOf(c.getString(month_index)));
+            date_time.set(Calendar.YEAR, Integer.valueOf(c.getString(year_index)));
+            date_time.set(Calendar.HOUR_OF_DAY, Integer.valueOf(c.getString(hour_index)));
+            date_time.set(Calendar.MINUTE, Integer.valueOf(c.getString(minute_index)));
+            date_time.set(Calendar.SECOND, 0);
+            date_time.set(Calendar.MILLISECOND, 0);
 
-            String voice_profile_name=c.getString(voice_profile_index);
+            UUID uuid_of_profile = UUID.fromString(c.getString(voice_profile_index));
+            VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
+            if(voice_profile==null){
+                RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                reminders_list_for_save.add(place_holder);
+            } else {
+                RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                place_holder.set_reminder_voice_profile(voice_profile);
+                reminders_list_for_save.add(place_holder);
+            }
+            // how to determine which voice profile is this? Use UUID
         }
+
+        return(reminders_list_for_save);
     }
 
     public void save_reminders_sql(ArrayList<RemindersModel> reminders_lists){
+        // firebase will be implemented later
+        for(int i=0;i<reminders_lists.size();i++){
+            Calendar temp_date=reminders_lists.get(i).get_reminder_date_time();
+            SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
+            my_database.
+            my_database.execSQL("CREATE TABLE IF NOT EXISTS BasicReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR)");
+            my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile) values (\'"+reminders_lists.get(i).get_reminder_name()+"\',"+String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY))+"\',"+String.valueOf(temp_date.get(Calendar.MINUTE))+"\',"+String.valueOf(temp_date.get(Calendar.YEAR))+"\',"+String.valueOf(temp_date.get(Calendar.MONTH))+"\',"+String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH))+"\',"+String.valueOf(reminders_lists.get(i).get_reminder_voice_profile().get_name())+"\'");
+        }
+    }
 
+    public boolean isTableExists(String tableName, boolean openDb) {
+        SQLiteOpenHelper mDatabase=
+        if(openDb) {
+            if(mDatabase == null || !mDatabase.isOpen()) {
+                mDatabase = getReadableDatabase();
+            }
+
+            if(!mDatabase.isReadOnly()) {
+                mDatabase.close();
+                mDatabase = getReadableDatabase();
+            }
+        }
+
+        Cursor cursor = mDatabase.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"+tableName+"'", null);
+        if(cursor!=null) {
+            if(cursor.getCount()>0) {
+                cursor.close();
+                return true;
+            }
+            cursor.close();
+        }
+        return false;
     }
 
     public void snooze_reminder(RemindersModel reminder_model, int minutes_snoozed){

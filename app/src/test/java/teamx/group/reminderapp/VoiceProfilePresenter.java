@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class VoiceProfilePresenter {
     ArrayList<VoiceProfileModel> voice_profile_lists=new ArrayList<VoiceProfileModel>();
@@ -39,10 +40,13 @@ public class VoiceProfilePresenter {
         this.voice_profile_lists.set(element_wanted,temporary_reminder_model);
     }
 
-    public VoiceProfileModel return_voice_profile(String name_of_profile){
+    public VoiceProfileModel search_profile(UUID uuid_recorded){
         for(int i=0;i<voice_profile_lists.size();i++){
-            this.voice_profile_lists.get(0).get_color_profile_name()
+            if(voice_profile_lists.get(i).get_name()==uuid_recorded){
+                return voice_profile_lists.get(i);
+            }
         }
+        return null;
     }
 
 
