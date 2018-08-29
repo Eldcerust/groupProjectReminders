@@ -28,6 +28,8 @@ public class VoiceProfileModel {
 
     public void set_color_profile_name(Color color){this.color_profile=color;}
 
+    public void set_UUID(UUID uuid_external){this.profile_UUID=uuid_external;}
+
     public void set_media_file(File media_file){this.media_file=media_file;}
 
     public void set_tts_boolean(Boolean tts_boolean){this.tts_boolean=tts_boolean;}

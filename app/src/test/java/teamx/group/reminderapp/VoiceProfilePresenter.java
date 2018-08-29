@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 
-public class VoiceProfilePresenter {
+public class VoiceProfilePresenter{
     private ArrayList<VoiceProfileModel> voice_profile_lists=new ArrayList<VoiceProfileModel>();
     private Context context_from_main;
     //store the list of voice profiles created by the user
@@ -19,32 +19,46 @@ public class VoiceProfilePresenter {
         //load from sql
     }
 
-    public ArrayList<VoiceProfilePresenter> load_sql_voice_profiles(){
+    public ArrayList<VoiceProfileModel> load_sql_voice_profiles(){
         SQLiteDatabase my_database=this.context_from_main.openOrCreateDatabase("VoiceProfiles", Context.MODE_PRIVATE,null);
         Cursor c = my_database.rawQuery("SELECT * FROM Profiles ORDER BY fileName,color,booleanTTS",null);
-        ArrayList<RemindersModel> reminders_list_for_save=new ArrayList<RemindersModel>();
+        ArrayList<VoiceProfileModel> reminders_list_for_save=new ArrayList<VoiceProfileModel>();
         //determine structure
         //title,year,month,date,day,hour,minute,
         //create reminder and insert one by one?
-        int count=0;
 
-        int color_index=c.getColumnIndex("color");
-        int file_name_index=c.getColumnIndex("fileName");
-        int boolean_tts_index=c.getColumnIndex("booleanTTS");
-        int voice_profile_UUID=c.getColumnIndex("profileUUID");
+        try {
 
-        c.moveToFirst();
+            int color_index = c.getColumnIndex("color");
+            int file_name_index = c.getColumnIndex("fileName");
+            int boolean_tts_index = c.getColumnIndex("booleanTTS");
+            int voice_profile_UUID = c.getColumnIndex("profileUUID");
 
-        while(c!=null) {
+            c.moveToFirst();
 
-            // how to determine which voice profile is this? Use UUID
+            while (c != null) {
+                Color color_fetced = new Color();
+                color_fetced.parseColor(c.getString(color_index));
+
+                File file = new File(c.getString(file_name_index));
+
+                boolean boolean_tts = Boolean.getBoolean(c.getString(boolean_tts_index));
+
+                UUID uuid_profile = UUID.fromString(c.getString(voice_profile_UUID));
+
+                VoiceProfileModel iteration_model=new VoiceProfileModel(color_fetced,boolean_tts,file);
+                iteration_model.set_UUID(uuid_profile);
+
+                reminders_list_for_save.add(iteration_model);
+
+                c.moveToNext();
+
+
+            }
+        } catch (Exception e){
+            return reminders_list_for_save;
         }
-
-        return(reminders_list_for_save);
-    }
-
-    public interface receive_voice_profiles{
-        public void receive_voice_profiles(VoiceProfilePresenter voice_profiles);
+        return reminders_list_for_save;
     }
 
     public void create_voice_profile(Color color_profile, File file_media, Boolean tts_boolean){

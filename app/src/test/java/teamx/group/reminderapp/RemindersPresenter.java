@@ -13,11 +13,8 @@ import java.util.UUID;
 import android.content.BroadcastReceiver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
-import android.speech.tts.Voice;
 
-public class RemindersPresenter {
+public class RemindersPresenter{
     private ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
     private Context from_main;
     private VoiceProfilePresenter presenter_for_presets;
@@ -30,10 +27,6 @@ public class RemindersPresenter {
         this.presenter_for_presets=presenter_model;
         this.reminder_list=load_reminders_from_sql();
         sort_reminders();
-    }
-
-    public void receive_voice_profiles(VoiceProfilePresenter voice_profiles){
-        this.presenter_for_presets=voice_profiles;
     }
 
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
