@@ -1,14 +1,51 @@
 package teamx.group.reminderapp;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.UUID;
 
 public class VoiceProfilePresenter {
-    ArrayList<VoiceProfileModel> voice_profile_lists=new ArrayList<VoiceProfileModel>();
+    private ArrayList<VoiceProfileModel> voice_profile_lists=new ArrayList<VoiceProfileModel>();
+    private Context context_from_main;
     //store the list of voice profiles created by the user
+
+    public VoiceProfilePresenter(){
+        //load from sql
+    }
+
+    public ArrayList<VoiceProfilePresenter> load_sql_voice_profiles(){
+        SQLiteDatabase my_database=this.context_from_main.openOrCreateDatabase("VoiceProfiles", Context.MODE_PRIVATE,null);
+        Cursor c = my_database.rawQuery("SELECT * FROM Profiles ORDER BY fileName,color,booleanTTS",null);
+        ArrayList<RemindersModel> reminders_list_for_save=new ArrayList<RemindersModel>();
+        //determine structure
+        //title,year,month,date,day,hour,minute,
+        //create reminder and insert one by one?
+        int count=0;
+
+        int color_index=c.getColumnIndex("color");
+        int file_name_index=c.getColumnIndex("fileName");
+        int boolean_tts_index=c.getColumnIndex("booleanTTS");
+        int voice_profile_UUID=c.getColumnIndex("profileUUID");
+
+        c.moveToFirst();
+
+        while(c!=null) {
+
+            // how to determine which voice profile is this? Use UUID
+        }
+
+        return(reminders_list_for_save);
+    }
+
+    public interface receive_voice_profiles{
+        public void receive_voice_profiles(VoiceProfilePresenter voice_profiles);
+    }
 
     public void create_voice_profile(Color color_profile, File file_media, Boolean tts_boolean){
         this.voice_profile_lists.add(new VoiceProfileModel(color_profile,tts_boolean,file_media));

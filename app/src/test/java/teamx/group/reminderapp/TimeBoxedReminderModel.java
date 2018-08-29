@@ -1,5 +1,6 @@
 package teamx.group.reminderapp;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class TimeBoxedReminderModel extends RemindersModel {
@@ -8,8 +9,12 @@ public class TimeBoxedReminderModel extends RemindersModel {
     private int long_break_session;
     private int short_to_long_transition;
 
-    public TimeBoxedReminderModel(String reminder_name, Date reminder_date_time, VoiceProfileModel reminder_voice_profile,int work_session_given,int short_break_session_given,int long_break_session_given,int short_to_long_transition_given) {
-        super(reminder_name, reminder_date_time, reminder_voice_profile);
+    public TimeBoxedReminderModel(String reminder_name, Calendar reminder_date_time, int work_session_given, int short_break_session_given, int long_break_session_given, int short_to_long_transition_given) {
+        super(reminder_name, reminder_date_time);
+        this.work_session=work_session_given;
+        this.short_break_session=short_break_session_given;
+        this.long_break_session=long_break_session_given;
+        this.short_to_long_transition=short_to_long_transition_given;
     }
 
     public int get_work_session(){return this.work_session;}

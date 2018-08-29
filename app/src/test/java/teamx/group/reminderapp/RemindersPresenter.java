@@ -19,16 +19,21 @@ import android.speech.tts.Voice;
 
 public class RemindersPresenter {
     private ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
-    public boolean done=false;
     private Context from_main;
     private VoiceProfilePresenter presenter_for_presets;
 
-    //function to load up and store reminders to sql
+    //function to attach data to viewers
+    //logic of data applied sent to viewers, or done here?
 
     public RemindersPresenter(Context context,VoiceProfilePresenter presenter_model){
         this.from_main=context.getApplicationContext();
         this.presenter_for_presets=presenter_model;
         this.reminder_list=load_reminders_from_sql();
+        sort_reminders();
+    }
+
+    public void receive_voice_profiles(VoiceProfilePresenter voice_profiles){
+        this.presenter_for_presets=voice_profiles;
     }
 
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
@@ -104,34 +109,18 @@ public class RemindersPresenter {
         for(int i=0;i<reminders_lists.size();i++){
             Calendar temp_date=reminders_lists.get(i).get_reminder_date_time();
             SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
-            my_database.
+            Cursor cursor = my_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                    + "BasicReminders" + "'", null);
+            if(cursor.getCount()>0) {
+                // do we need to identify which reminder has which kind of UUID?
+                // requirement to set proper UUID for different reminders?
+                // or just nuke the entire database and make a new one?
+                my_database.execSQL("DROP TABLE BasicReminders");
+            }
             my_database.execSQL("CREATE TABLE IF NOT EXISTS BasicReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR)");
+            // no need for creating if does not exist, so, just for the sake if there is an empty table, somehow???
             my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile) values (\'"+reminders_lists.get(i).get_reminder_name()+"\',"+String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY))+"\',"+String.valueOf(temp_date.get(Calendar.MINUTE))+"\',"+String.valueOf(temp_date.get(Calendar.YEAR))+"\',"+String.valueOf(temp_date.get(Calendar.MONTH))+"\',"+String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH))+"\',"+String.valueOf(reminders_lists.get(i).get_reminder_voice_profile().get_name())+"\'");
         }
-    }
-
-    public boolean isTableExists(String tableName, boolean openDb) {
-        SQLiteOpenHelper mDatabase=
-        if(openDb) {
-            if(mDatabase == null || !mDatabase.isOpen()) {
-                mDatabase = getReadableDatabase();
-            }
-
-            if(!mDatabase.isReadOnly()) {
-                mDatabase.close();
-                mDatabase = getReadableDatabase();
-            }
-        }
-
-        Cursor cursor = mDatabase.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"+tableName+"'", null);
-        if(cursor!=null) {
-            if(cursor.getCount()>0) {
-                cursor.close();
-                return true;
-            }
-            cursor.close();
-        }
-        return false;
     }
 
     public void snooze_reminder(RemindersModel reminder_model, int minutes_snoozed){
@@ -214,7 +203,7 @@ public class RemindersPresenter {
         int left_mark=left_index+1;
         int right_mark=right_index;
 
-        done=false;
+        boolean done=false;
 
         while(!done){
             while((left_mark<=right_mark) && (compare_date(reminder_list.get(left_index).get_reminder_date_time(),pivot_value,true))){
