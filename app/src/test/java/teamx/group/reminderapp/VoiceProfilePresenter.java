@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.speech.tts.Voice;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,8 +38,15 @@ public class VoiceProfilePresenter{
             c.moveToFirst();
 
             while (c != null) {
+                String color_fromdbase=c.getString(color_index);
+                int[] color_array=new int[4];
+                String[] split_color=color_fromdbase.split(",");
+                for(int i=0;i<color_array.length;i++){
+                    float temp=Float.valueOf(c.getString(color_index));
+                    color_array[i] = Math.round(temp*255);
+                }
                 Color color_fetced = new Color();
-                color_fetced.parseColor(c.getString(color_index));
+
 
                 File file = new File(c.getString(file_name_index));
 
@@ -61,8 +69,28 @@ public class VoiceProfilePresenter{
         return reminders_list_for_save;
     }
 
+    public void save_sql(Context context,ArrayList<VoiceProfileModel> voice_profiles_to_save){
+        //require context to actually save the sql
+        for(int i=0;i<voice_profiles_to_save.size();i++){
+            VoiceProfileModel iterated_profiles=voice_profiles_to_save.get(i);
+            SQLiteDatabase my_database=context.openOrCreateDatabase("Voice Profiles",Context.MODE_PRIVATE,null);
+            Cursor cursor = my_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                    + "Profiles" + "'", null);
+            if(cursor.getCount()>0){
+                my_database.execSQL("DROP TABLE Profiles");
+            }
+            my_database.execSQL("CREATE TABLE IF NOT EXISTS Profiles(color VARCHAR, fileName VARCHAR,booleanTTS BOOLEAN,profileUUID VARCHAR)");
+            my_database.execSQL("INSERT INTO Profiles(color,fileName,booleanTTS,profileUUID) values (\'"this.color_to_string(iterated_profiles.get_color_profile_name())");
+        }
+    }
+
     public void create_voice_profile(Color color_profile, File file_media, Boolean tts_boolean){
         this.voice_profile_lists.add(new VoiceProfileModel(color_profile,tts_boolean,file_media));
+    }
+
+    public String color_to_string(Color color) {
+        String color_return = String.valueOf(color.alpha()) + "," + String.valueOf(color.red()) + "," + String.valueOf(color.green()) + "," + String.valueOf(color.blue());
+        return color_return;
     }
 
     public void enable_tts(int element_wanted){
