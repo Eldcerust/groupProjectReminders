@@ -38,15 +38,7 @@ public class VoiceProfilePresenter{
             c.moveToFirst();
 
             while (c != null) {
-                String color_fromdbase=c.getString(color_index);
-                int[] color_array=new int[4];
-                String[] split_color=color_fromdbase.split(",");
-                for(int i=0;i<color_array.length;i++){
-                    float temp=Float.valueOf(c.getString(color_index));
-                    color_array[i] = Math.round(temp*255);
-                }
-                Color color_fetced = new Color();
-
+                Color color_fetched=return_color(c.getString(color_index));
 
                 File file = new File(c.getString(file_name_index));
 
@@ -54,14 +46,12 @@ public class VoiceProfilePresenter{
 
                 UUID uuid_profile = UUID.fromString(c.getString(voice_profile_UUID));
 
-                VoiceProfileModel iteration_model=new VoiceProfileModel(color_fetced,boolean_tts,file);
+                VoiceProfileModel iteration_model=new VoiceProfileModel(color_fetched,boolean_tts,file);
                 iteration_model.set_UUID(uuid_profile);
 
                 reminders_list_for_save.add(iteration_model);
 
                 c.moveToNext();
-
-
             }
         } catch (Exception e){
             return reminders_list_for_save;
@@ -80,7 +70,7 @@ public class VoiceProfilePresenter{
                 my_database.execSQL("DROP TABLE Profiles");
             }
             my_database.execSQL("CREATE TABLE IF NOT EXISTS Profiles(color VARCHAR, fileName VARCHAR,booleanTTS BOOLEAN,profileUUID VARCHAR)");
-            my_database.execSQL("INSERT INTO Profiles(color,fileName,booleanTTS,profileUUID) values (\'"this.color_to_string(iterated_profiles.get_color_profile_name())");
+            my_database.execSQL("INSERT INTO Profiles(color,fileName,booleanTTS,profileUUID) values (\'"+this.color_to_string(iterated_profiles.get_color_profile_name())+"\',\'"+iterated_profiles.get_media_file().toPath().toString()+"\',\'"+String.valueOf(iterated_profiles.get_tts_boolean())+"\',\'"+iterated_profiles.get_name().toString()+"\')");
         }
     }
 
@@ -91,6 +81,16 @@ public class VoiceProfilePresenter{
     public String color_to_string(Color color) {
         String color_return = String.valueOf(color.alpha()) + "," + String.valueOf(color.red()) + "," + String.valueOf(color.green()) + "," + String.valueOf(color.blue());
         return color_return;
+    }
+
+    public Color return_color(String raw_float_values){
+        float[] color_array=new float[4];
+        String[] split_color=raw_float_values.split(",");
+        for(int i=0;i<color_array.length;i++){
+            color_array[i]=Float.valueOf(split_color[i]);
+        }
+        Color color_to_return = Color.valueOf(color_array[0],color_array[1],color_array[2],color_array[3]);
+        return color_to_return;
     }
 
     public void enable_tts(int element_wanted){
