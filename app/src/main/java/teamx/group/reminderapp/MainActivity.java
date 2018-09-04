@@ -1,5 +1,6 @@
 package teamx.group.reminderapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,9 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,newBasicReminders.receive_reminders_data {
+    private VoiceProfilePresenter profiles_voice;
+    private RemindersPresenter reminders_present;
+    private ListView list_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +31,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        fetch_data();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -45,6 +53,46 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    public void fetch_data(){
+        profiles_voice.load_sql_voice_profiles();
+        reminders_present=new RemindersPresenter(this,profiles_voice);
+        reminders_present.load_reminders_from_sql();
+    }
+
+    public void set_list_on_display() {
+        CustomListAdapter adapter_for_list=new CustomListAdapter(this,reminders_present.get_reminder_list());
+        list_view.setAdapter(adapter_for_list);
+        list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object list_view_object=list_view.getItemAtPosition(position);
+                // how to get the type of the object without intentionally casting it first?
+                // cast it and test for return type?
+                RemindersModel reminder_to_edit=(RemindersModel)list_view_object;
+                if(reminder_to_edit.return_type().equals("Basic Reminders")){
+                    //insert code for basic reminders editor
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminders.class);
+                    reminder_edit_intent.putExtra("EditThisReminder",position);
+                    startActivityForResult(reminder_edit_intent,2);
+
+                }else if(reminder_to_edit.return_type().equals("Recurring Reminders")){
+
+                }else if(reminder_to_edit.return_type().equals("Time Boxed Reminders")) {
+
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int request_code,int result_code,Intent data_received){
+        if(request_code==2){
+            if(result_code==RESULT_OK){
+                //create function on reminderpresenter to edit sql
+            }
+        }
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -53,6 +101,11 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
+    }
+
+
+    public RemindersModel receive_reminders_data(RemindersModel reminder_item) {
+        return reminder_item;
     }
 
     @Override

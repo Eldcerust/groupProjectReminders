@@ -29,6 +29,10 @@ public class RemindersPresenter{
         sort_reminders();
     }
 
+    public ArrayList<RemindersModel> get_reminder_list() {
+        return reminder_list;
+    }
+
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
         RemindersModel new_reminder=new RemindersModel(reminder_name,date_time);
         new_reminder.set_reminder_voice_profile(voice_profile);
@@ -36,6 +40,11 @@ public class RemindersPresenter{
         this.sort_reminders();
         this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
         // in other words, both has to be detected and displayed in a manner of having "2 reminders"
+    }
+
+    public void change_reminders(String reminder_name,Calendar date_time,VoiceProfileModel voice_profile,int position){
+        this.reminder_list.remove(position);
+        this.create_reminder(reminder_name,date_time,voice_profile);
     }
 
     public void create_reminder(String reminder_name, Calendar date_time){
@@ -175,12 +184,12 @@ public class RemindersPresenter{
         this.reminder_list.set(element_wanted,temporary_reminder);
     }
 
-    public void sort_reminders(){
+    private void sort_reminders(){
         this.quick_sort_helper(this.reminder_list,0,this.reminder_list.size()-1);
         //move this code in to other place/presenter s
     }
 
-    public void quick_sort_helper(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
+    private void quick_sort_helper(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
         if(left_index<right_index){
             int split_point=this.quick_sort_partition(reminder_list,left_index,right_index);
 
@@ -190,7 +199,7 @@ public class RemindersPresenter{
 
     }
 
-    public int quick_sort_partition(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
+    private int quick_sort_partition(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
         Calendar pivot_value=reminder_list.get(left_index).get_reminder_date_time();
 
         int left_mark=left_index+1;
@@ -231,7 +240,7 @@ public class RemindersPresenter{
 
     }
 
-    public boolean compare_date(Calendar date_first, Calendar date_second,Boolean direction){
+    private boolean compare_date(Calendar date_first, Calendar date_second,Boolean direction){
         //direction is used to correct the orientation of equals than. True is for date_first is less than or equals to date_second and false is vice versa
         //return true if first value is larger, else, false if second value is larger
         if(date_first.compareTo(date_second)>0){

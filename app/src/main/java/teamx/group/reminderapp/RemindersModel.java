@@ -30,4 +30,6 @@ public class RemindersModel {
     public UUID get_reminder_UUID(){return this.reminder_UUID;}
 
     public VoiceProfileModel get_reminder_voice_profile(){return this.reminder_voice_profile;}
+
+    public String return_type(){return "Basic Reminders";}
 }
