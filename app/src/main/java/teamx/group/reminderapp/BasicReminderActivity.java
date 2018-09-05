@@ -10,4 +10,8 @@ public class BasicReminderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_basic_reminder);
     }
+
+    public interface receive_reminders_data{
+        public RemindersModel receive_reminders_data(RemindersModel reminder_item);
+    }
 }

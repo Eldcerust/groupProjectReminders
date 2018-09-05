@@ -15,9 +15,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 public class RemindersPresenter{
-    private ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
-    private Context from_main;
-    private VoiceProfilePresenter presenter_for_presets;
+    protected ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
+    protected Context from_main;
+    protected VoiceProfilePresenter presenter_for_presets;
 
     //function to attach data to viewers
     //logic of data applied sent to viewers, or done here?
@@ -184,7 +184,7 @@ public class RemindersPresenter{
         this.reminder_list.set(element_wanted,temporary_reminder);
     }
 
-    private void sort_reminders(){
+    protected void sort_reminders(){
         this.quick_sort_helper(this.reminder_list,0,this.reminder_list.size()-1);
         //move this code in to other place/presenter s
     }

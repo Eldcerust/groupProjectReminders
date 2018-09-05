@@ -30,9 +30,9 @@ public class AlarmReceiver extends BroadcastReceiver {
         PendingIntent forThisIntent=PendingIntent.getActivity(context,NOTIFICATION_ID,thisIntent,0);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context,"default")
-                .setSmallIcon(R.raw.aperture)
-                .setContentTitle(/*will be decided later*/)
-                .setContentText(/* will require further formatting of text that will be required to be displayed*/)
+                .setSmallIcon(R.raw.alarmsmartphone)
+                .setContentTitle("Placeholder")
+                .setContentText("Placeholder text")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(forThisIntent)
                 .setAutoCancel(true)

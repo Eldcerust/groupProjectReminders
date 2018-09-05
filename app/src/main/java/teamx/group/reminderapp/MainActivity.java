@@ -17,7 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,newBasicReminders.receive_reminders_data {
+        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,BasicReminderActivity.receive_reminders_data {
     private VoiceProfilePresenter profiles_voice;
     private RemindersPresenter reminders_present;
     private ListView list_view;
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity
                 RemindersModel reminder_to_edit=(RemindersModel)list_view_object;
                 if(reminder_to_edit.return_type().equals("Basic Reminders")){
                     //insert code for basic reminders editor
-                    Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminders.class);
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,BasicReminderActivity.class);
                     reminder_edit_intent.putExtra("EditThisReminder",position);
                     startActivityForResult(reminder_edit_intent,2);
 
