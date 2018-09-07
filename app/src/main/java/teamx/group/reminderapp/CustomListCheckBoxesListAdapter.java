@@ -27,6 +27,10 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter {
         return return data_lists.size();
     }
 
+    public void addEmptyList(){
+        this.data_lists.add(new CheckBoxListSingle(false,""));
+    }
+
     @Override
     public Object getItem(int i) {
         return data_lists.get(i);
@@ -55,19 +59,6 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter {
         layout_holder.list_name.setText(this.data_lists.get(i).get_name());
         // if text view has text, edit text is hidden
         // edit text should not phase out if the user has not entered anything and tried to skip
-        layout_holder.input_layout.getEditText().addTextChangedListener(new TextWatcherLocal() {
-            @Override
-            public void afterTextChanged(Editable s, boolean backSpace) {
-                if(backSpace && s.length()>0){
-                    
-                }
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-        });
     }
 
     static class ViewHolder{
