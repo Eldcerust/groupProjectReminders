@@ -1,5 +1,6 @@
 package teamx.group.reminderapp;
 
+import android.app.AlarmManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,9 +19,15 @@ import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ReminderView,BasicReminderActivity.receive_reminders_data {
+
+    // this is unfortunately not the first activity, despite being the most important activity
     private VoiceProfilePresenter profiles_voice;
     private RemindersPresenter reminders_present;
     private ListView list_view;
+    private AlarmManager alarm_mgr;
+    private RemindersPresenter reminders_access;
+    private VoiceProfilePresenter voice_access;
+    private ListView lvl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +45,11 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        //.setAction("Action", null).show();
+                Intent intent_fab=new Intent(MainActivity.this,newBasicReminder.class);
+                intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
+                startActivityForResult(intent_fab,2);
             }
         });
 
