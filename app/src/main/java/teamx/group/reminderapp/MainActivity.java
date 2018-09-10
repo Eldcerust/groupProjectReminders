@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ReminderView,BasicReminderActivity.receive_reminders_data {
 
@@ -163,5 +165,9 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public interface transferBasicReminders{
+        public void transferBasicReminders(RemindersModel e);
     }
 }
