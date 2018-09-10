@@ -12,6 +12,7 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import java.util.Calendar;
+import java.util.Date;
 
 public class newBasicReminder extends AppCompatActivity implements MainActivity.transferBasicReminders,DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
     private TextView date_button,time_button;
@@ -20,6 +21,7 @@ public class newBasicReminder extends AppCompatActivity implements MainActivity.
     private RemindersModel create_or_modify_reminder;
     private Calendar current_date;
     private int edit_int;
+    private RemindersPresenter interact_reminder_edits;
     private String[] date_array;
 
     @Override
@@ -100,19 +102,23 @@ public class newBasicReminder extends AppCompatActivity implements MainActivity.
     @Override
     public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
         //set the date of the string array and also the calendar?
+        this.current_date.set(Calendar.DAY_OF_MONTH,i);
+        this.current_date.set(Calendar.MONTH,i1);
+        this.current_date.set(Calendar.YEAR,i2);
+        set_calendar_text(this.current_date);
     }
 
     @Override
     public void onTimeSet(TimePicker timePicker, int i, int i1) {
         //set the time of the string aray and also the calendar object
+        this.current_date.set(Calendar.HOUR_OF_DAY,i);
+        this.current_date.set(Calendar.MINUTE,i1);
+        set_calendar_text(this.current_date);
     }
 
     @Override
     public void onDialogDismissListener(int position) {
 
     }
-
-    public void transferBasicReminders(RemindersModel e) {
-        this.create_or_modify_reminder=e;
-    }
+    // find a way to insert remindersmodel in and out without ridiculous strats
 }

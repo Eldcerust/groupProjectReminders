@@ -42,6 +42,10 @@ public class RemindersPresenter{
         // in other words, both has to be detected and displayed in a manner of having "2 reminders"
     }
 
+    public void insert_reminder(RemindersModel a){
+        this.reminder_list.add(a);
+    }
+
     public void change_reminders(String reminder_name,Calendar date_time,VoiceProfileModel voice_profile,int position){
         this.reminder_list.remove(position);
         this.create_reminder(reminder_name,date_time,voice_profile);

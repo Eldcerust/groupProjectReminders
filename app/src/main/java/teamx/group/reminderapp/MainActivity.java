@@ -20,7 +20,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,BasicReminderActivity.receive_reminders_data {
+        implements NavigationView.OnNavigationItemSelectedListener,ReminderView{
 
     // this is unfortunately not the first activity, despite being the most important activity
     private VoiceProfilePresenter profiles_voice;
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         //.setAction("Action", null).show();
                 Intent intent_fab=new Intent(MainActivity.this,newBasicReminder.class);
-                intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
+                intent_fab.putExtra("EDITMODE",Integer.MIN_VALUE);
                 startActivityForResult(intent_fab,2);
             }
         });
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity
                 RemindersModel reminder_to_edit=(RemindersModel)list_view_object;
                 if(reminder_to_edit.return_type().equals("Basic Reminders")){
                     //insert code for basic reminders editor
-                    Intent reminder_edit_intent=new Intent(MainActivity.this,BasicReminderActivity.class);
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminder.class);
                     reminder_edit_intent.putExtra("EditThisReminder",position);
                     startActivityForResult(reminder_edit_intent,2);
 
@@ -118,6 +118,10 @@ public class MainActivity extends AppCompatActivity
 
     public RemindersModel receive_reminders_data(RemindersModel reminder_item) {
         return reminder_item;
+        // how to properly return an item?
+        // call a function that will eat the item back?
+        // implementation cyclic error
+
     }
 
     @Override
@@ -168,6 +172,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public interface transferBasicReminders{
-        public void transferBasicReminders(RemindersModel e);
+        public void transferBasicReminders(RemindersPresenter e);
+        public void transferBasicReminders(RemindersPresenter e,int position);
     }
 }
