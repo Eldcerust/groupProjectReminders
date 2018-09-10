@@ -37,6 +37,10 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
         notifyDataSetChanged();
     }
 
+    public ArrayList<CheckBoxListSingle> return_changed_list(){
+        return this.data_lists;
+    }
+
     @Override
     public Object getItem(int i) {
         return data_lists.get(i);
