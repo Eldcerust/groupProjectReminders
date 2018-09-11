@@ -88,12 +88,12 @@ public class MainActivity extends AppCompatActivity
                 // cast it and test for return type?
                 RemindersModel reminder_to_edit=(RemindersModel)list_view_object;
                 if(reminder_to_edit.return_type().equals("Basic Reminders")){
+                    //the above if function serve to check if there are overrides to determine what type of object is the item. Child class overrides will be enforced even if cast.
                     //insert code for basic reminders editor
                     temporary_class_container_basic_reminder_creation=new newBasicReminder(reminder_to_edit);
                     Intent reminder_edit_intent=new Intent(MainActivity.this,temporary_class_container_basic_reminder_creation.getClass());
                     reminder_edit_intent.putExtra("EDITMODE",position);
                     startActivityForResult(reminder_edit_intent,2);
-
                 }else if(reminder_to_edit.return_type().equals("Recurring Reminders")){
 
                 }else if(reminder_to_edit.return_type().equals("Time Boxed Reminders")) {

@@ -77,7 +77,7 @@ public class RemindersPresenter{
     }
 
     public void delete_reminder_position(int position){
-        this.reminder_list.remove(position)
+        this.reminder_list.remove(position);
     }
 
     public void create_reminder(String reminder_name, Calendar date_time){
