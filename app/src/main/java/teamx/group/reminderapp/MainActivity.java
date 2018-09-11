@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ReminderView{
@@ -27,9 +28,9 @@ public class MainActivity extends AppCompatActivity
     private RemindersPresenter reminders_present;
     private ListView list_view;
     private AlarmManager alarm_mgr;
-    private RemindersPresenter reminders_access;
     private VoiceProfilePresenter voice_access;
     private ListView lvl;
+    private newBasicReminder temporary_class_container_basic_reminder_creation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,8 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         //.setAction("Action", null).show();
-                Intent intent_fab=new Intent(MainActivity.this,newBasicReminder.class);
+                temporary_class_container_basic_reminder_creation=new newBasicReminder(new RemindersModel(null, null));
+                Intent intent_fab=new Intent(MainActivity.this,temporary_class_container_basic_reminder_creation.getClass());
                 intent_fab.putExtra("EDITMODE",Integer.MIN_VALUE);
                 startActivityForResult(intent_fab,2);
             }
@@ -71,6 +73,10 @@ public class MainActivity extends AppCompatActivity
         reminders_present.load_reminders_from_sql();
     }
 
+    public void set_list_on_main_view(){
+
+    }
+
     public void set_list_on_display() {
         CustomListAdapter adapter_for_list=new CustomListAdapter(this,reminders_present.get_reminder_list());
         list_view.setAdapter(adapter_for_list);
@@ -83,8 +89,9 @@ public class MainActivity extends AppCompatActivity
                 RemindersModel reminder_to_edit=(RemindersModel)list_view_object;
                 if(reminder_to_edit.return_type().equals("Basic Reminders")){
                     //insert code for basic reminders editor
-                    Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminder.class);
-                    reminder_edit_intent.putExtra("EditThisReminder",position);
+                    temporary_class_container_basic_reminder_creation=new newBasicReminder(reminder_to_edit);
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,temporary_class_container_basic_reminder_creation.getClass());
+                    reminder_edit_intent.putExtra("EDITMODE",position);
                     startActivityForResult(reminder_edit_intent,2);
 
                 }else if(reminder_to_edit.return_type().equals("Recurring Reminders")){
@@ -100,6 +107,15 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int request_code,int result_code,Intent data_received){
         if(request_code==2){
             if(result_code==RESULT_OK){
+                if(data_received.getStringArrayExtra("State")[0].equals("FetchReminderModel")){
+                    RemindersModel a=this.temporary_class_container_basic_reminder_creation.get_create_or_modify_reminder();
+                    this.reminders_present.insert_reminder(a);
+                }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
+                    RemindersModel a=this.temporary_class_container_basic_reminder_creation.get_create_or_modify_reminder();
+                    this.reminders_present.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
+                    this.reminders_present.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                }
                 //create function on reminderpresenter to edit sql
             }
         }

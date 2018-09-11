@@ -1,7 +1,9 @@
 package teamx.group.reminderapp;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.DialogFragment;
@@ -12,17 +14,31 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import java.util.Calendar;
-import java.util.Date;
 
-public class newBasicReminder extends AppCompatActivity implements MainActivity.transferBasicReminders,DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
+public class newBasicReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
     private TextView date_button,time_button;
     private TextInputLayout inserted_title;
     private Button create_button,edit_button,delete_button;
     private RemindersModel create_or_modify_reminder;
     private Calendar current_date;
     private int edit_int;
-    private RemindersPresenter interact_reminder_edits;
     private String[] date_array;
+
+    public newBasicReminder(RemindersModel a){
+        this.create_or_modify_reminder=a;
+        //when constructing this item, please do on the intent, as an alternative to newBasicReminder.class new newBasicReminderModel(object remindermodel).getClass()
+    }
+
+    public RemindersModel get_create_or_modify_reminder() {
+        return create_or_modify_reminder;
+    }
+
+    public Intent create_finished_intent(String key, String[] data){
+        Intent intent_finished=new Intent();
+        intent_finished.putExtra(key,data);
+        setResult(Activity.RESULT_OK,intent_finished);
+        return intent_finished;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +134,39 @@ public class newBasicReminder extends AppCompatActivity implements MainActivity.
 
     @Override
     public void onDialogDismissListener(int position) {
+        finish();
+    }
 
+    public void create_button_onclick(View v){
+        String title_determined=this.inserted_title.getEditText().getText().toString();
+        this.create_or_modify_reminder.set_reminder_name(title_determined);
+        this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
+        String[] commandArray=new String[2];
+        commandArray[0]="FetchReminderModel";
+        Intent create_button_intent=create_finished_intent("State",commandArray);
+        finish();
+        //use intent sent back to signal the fetch of data
+    }
+
+    public void delete_button_onclick(View v){
+        // require remindermodel to be known at what position
+        // require access to the reminder position
+        String[] commandArray=new String[2];
+        commandArray[0]="DeletThis";
+        commandArray[1]=String.valueOf(this.edit_int);
+        Intent delete_button_intent=create_finished_intent("State",commandArray);
+        finish();
+    }
+
+    public void edit_button_onclick(View v){
+        String title_determined=this.inserted_title.getEditText().getText().toString();
+        this.create_or_modify_reminder.set_reminder_name(title_determined);
+        this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
+        String[] commandArray=new String[2];
+        commandArray[0]="FindAndReplace";
+        commandArray[1]=String.valueOf(this.edit_int);
+        Intent edit_button_intent=create_finished_intent("State",commandArray);
+        finish();
     }
     // find a way to insert remindersmodel in and out without ridiculous strats
 }

@@ -49,6 +49,35 @@ public class RemindersPresenter{
     public void change_reminders(String reminder_name,Calendar date_time,VoiceProfileModel voice_profile,int position){
         this.reminder_list.remove(position);
         this.create_reminder(reminder_name,date_time,voice_profile);
+        sort_reminders();
+    }
+
+    public void change_reminder_uuidbased(RemindersModel modified){
+        UUID modified_uuid=modified.get_reminder_UUID();
+        for(int a=0;a<this.reminder_list.size();a++){
+            if(this.reminder_list.get(a).get_reminder_UUID()==modified_uuid){
+                this.reminder_list.set(a,modified);
+            }
+        }
+        sort_reminders();
+    }
+
+    public void change_reminder_position_wremindermodel(RemindersModel modified,int position){
+        this.reminder_list.set(position,modified);
+        sort_reminders();;
+    }
+
+    public void delete_reminder(RemindersModel non_modified){
+        UUID non_modified_uuid=non_modified.get_reminder_UUID();
+        for(int a=0;a<this.reminder_list.size();a++){
+            if(this.reminder_list.get(a).get_reminder_UUID()==non_modified_uuid){
+                this.reminder_list.remove(a);
+            }
+        }
+    }
+
+    public void delete_reminder_position(int position){
+        this.reminder_list.remove(position)
     }
 
     public void create_reminder(String reminder_name, Calendar date_time){
@@ -72,39 +101,43 @@ public class RemindersPresenter{
         //create reminder and insert one by one?
         int count=0;
 
-        int title_index=c.getColumnIndex("title");
-        int hour_index=c.getColumnIndex("hour");
-        int minute_index=c.getColumnIndex("minute");
-        int year_index=c.getColumnIndex("year");
-        int month_index=c.getColumnIndex("month");
-        int day_index=c.getColumnIndex("day");
-        int voice_profile_index=c.getColumnIndex("voiceProfile");
+        try{
+            int title_index=c.getColumnIndex("title");
+            int hour_index=c.getColumnIndex("hour");
+            int minute_index=c.getColumnIndex("minute");
+            int year_index=c.getColumnIndex("year");
+            int month_index=c.getColumnIndex("month");
+            int day_index=c.getColumnIndex("day");
+            int voice_profile_index=c.getColumnIndex("voiceProfile");
 
-        c.moveToFirst();
+            c.moveToFirst();
 
-        while(c!=null) {
-            String reminder_name = c.getString(title_index);
+            while(c!=null) {
+                String reminder_name = c.getString(title_index);
 
-            Calendar date_time = Calendar.getInstance();
-            date_time.set(Calendar.DAY_OF_MONTH, Integer.valueOf(c.getString(day_index)));
-            date_time.set(Calendar.MONTH, Integer.valueOf(c.getString(month_index)));
-            date_time.set(Calendar.YEAR, Integer.valueOf(c.getString(year_index)));
-            date_time.set(Calendar.HOUR_OF_DAY, Integer.valueOf(c.getString(hour_index)));
-            date_time.set(Calendar.MINUTE, Integer.valueOf(c.getString(minute_index)));
-            date_time.set(Calendar.SECOND, 0);
-            date_time.set(Calendar.MILLISECOND, 0);
+                Calendar date_time = Calendar.getInstance();
+                date_time.set(Calendar.DAY_OF_MONTH, Integer.valueOf(c.getString(day_index)));
+                date_time.set(Calendar.MONTH, Integer.valueOf(c.getString(month_index)));
+                date_time.set(Calendar.YEAR, Integer.valueOf(c.getString(year_index)));
+                date_time.set(Calendar.HOUR_OF_DAY, Integer.valueOf(c.getString(hour_index)));
+                date_time.set(Calendar.MINUTE, Integer.valueOf(c.getString(minute_index)));
+                date_time.set(Calendar.SECOND, 0);
+                date_time.set(Calendar.MILLISECOND, 0);
 
-            UUID uuid_of_profile = UUID.fromString(c.getString(voice_profile_index));
-            VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
-            if(voice_profile==null){
-                RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
-                reminders_list_for_save.add(place_holder);
-            } else {
-                RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
-                place_holder.set_reminder_voice_profile(voice_profile);
-                reminders_list_for_save.add(place_holder);
+                UUID uuid_of_profile = UUID.fromString(c.getString(voice_profile_index));
+                VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
+                if(voice_profile==null){
+                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                    reminders_list_for_save.add(place_holder);
+                } else {
+                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                    place_holder.set_reminder_voice_profile(voice_profile);
+                    reminders_list_for_save.add(place_holder);
+                }
+                // how to determine which voice profile is this? Use UUID
             }
-            // how to determine which voice profile is this? Use UUID
+        } catch (Exception e){
+            return(reminders_list_for_save);
         }
 
         return(reminders_list_for_save);
