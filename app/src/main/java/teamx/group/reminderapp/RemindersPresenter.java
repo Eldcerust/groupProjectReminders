@@ -25,7 +25,7 @@ public class RemindersPresenter{
     public RemindersPresenter(Context context,VoiceProfilePresenter presenter_model){
         this.from_main=context.getApplicationContext();
         this.presenter_for_presets=presenter_model;
-        this.reminder_list=load_reminders_from_sql();
+        //this.reminder_list=load_reminders_from_sql();
         sort_reminders();
     }
 

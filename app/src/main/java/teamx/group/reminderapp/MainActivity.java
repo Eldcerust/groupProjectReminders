@@ -50,8 +50,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         //.setAction("Action", null).show();
-                temporary_class_container_basic_reminder_creation=new newBasicReminder(new RemindersModel(null, null));
-                Intent intent_fab=new Intent(MainActivity.this,temporary_class_container_basic_reminder_creation.getClass());
+                Intent intent_fab=new Intent(MainActivity.this,new newBasicReminder(new RemindersModel(null,null)).getClass());
                 intent_fab.putExtra("EDITMODE",Integer.MIN_VALUE);
                 startActivityForResult(intent_fab,2);
             }
@@ -68,13 +67,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void fetch_data(){
-        profiles_voice.load_sql_voice_profiles();
-        reminders_present=new RemindersPresenter(this,profiles_voice);
-        reminders_present.load_reminders_from_sql();
-    }
-
-    public void set_list_on_main_view(){
-
+        profiles_voice=new VoiceProfilePresenter(this.getApplicationContext());
+        //profiles_voice.load_sql_voice_profiles();
+        reminders_present=new RemindersPresenter(this.getApplicationContext(),profiles_voice);
+        //reminders_present.load_reminders_from_sql();
     }
 
     public void set_list_on_display() {

@@ -16,20 +16,19 @@ public class VoiceProfilePresenter{
     private Context context_from_main;
     //store the list of voice profiles created by the user
 
-    public VoiceProfilePresenter(){
+    public VoiceProfilePresenter(Context context){
+        this.context_from_main=context;
         //load from sql
     }
 
     public ArrayList<VoiceProfileModel> load_sql_voice_profiles(){
         SQLiteDatabase my_database=this.context_from_main.openOrCreateDatabase("VoiceProfiles", Context.MODE_PRIVATE,null);
-        Cursor c = my_database.rawQuery("SELECT * FROM Profiles ORDER BY fileName,color,booleanTTS",null);
         ArrayList<VoiceProfileModel> reminders_list_for_save=new ArrayList<VoiceProfileModel>();
+        try{
+            Cursor c = my_database.rawQuery("SELECT * FROM Profiles ORDER BY fileName,color,booleanTTS",null);
         //determine structure
         //title,year,month,date,day,hour,minute,
         //create reminder and insert one by one?
-
-        try {
-
             int color_index = c.getColumnIndex("color");
             int file_name_index = c.getColumnIndex("fileName");
             int boolean_tts_index = c.getColumnIndex("booleanTTS");
