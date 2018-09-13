@@ -64,18 +64,20 @@
         android:id="@+id/timeTitleView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="116dp"
         android:text="Time:"
         android:textSize="18sp"
         android:textStyle="bold"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="113dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/timeView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="18dp"
         android:text="24:59"
         android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/dateTitleView"
@@ -93,7 +95,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
-    <android.support.v7.widget.RecyclerView
+    <ListView
+        android:id="@+id/checkboxListView"
+        android:focusable="false"
+        android:descendantFocusability="afterDescendants"
         android:layout_width="299dp"
         android:layout_height="310dp"
         android:layout_marginBottom="8dp"

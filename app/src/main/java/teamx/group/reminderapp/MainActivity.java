@@ -29,8 +29,9 @@ public class MainActivity extends AppCompatActivity
     private ListView list_view;
     private AlarmManager alarm_mgr;
     private VoiceProfilePresenter voice_access;
-    private ListView lvl;
     private newBasicReminder temporary_class_container_basic_reminder_creation;
+    public static ReminderItemPositions reminder_transmission_holder;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        this.list_view=(ListView)findViewById(R.id.listView);
 
         fetch_data();
 
@@ -50,8 +52,8 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         //.setAction("Action", null).show();
-                Intent intent_fab=new Intent(MainActivity.this,new newBasicReminder(new RemindersModel(null,null)).getClass());
-                intent_fab.putExtra("EDITMODE",Integer.MIN_VALUE);
+                Intent intent_fab=new Intent(MainActivity.this,newBasicReminder.class);
+                intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
                 startActivityForResult(intent_fab,2);
             }
         });
@@ -82,17 +84,17 @@ public class MainActivity extends AppCompatActivity
                 Object list_view_object=list_view.getItemAtPosition(position);
                 // how to get the type of the object without intentionally casting it first?
                 // cast it and test for return type?
-                RemindersModel reminder_to_edit=(RemindersModel)list_view_object;
-                if(reminder_to_edit.return_type().equals("Basic Reminders")){
+                reminder_transmission_holder.reminder_model=(RemindersModel)list_view_object;
+                if(reminder_transmission_holder.reminder_model.return_type().equals("Basic Reminders")){
                     //the above if function serve to check if there are overrides to determine what type of object is the item. Child class overrides will be enforced even if cast.
                     //insert code for basic reminders editor
-                    temporary_class_container_basic_reminder_creation=new newBasicReminder(reminder_to_edit);
-                    Intent reminder_edit_intent=new Intent(MainActivity.this,temporary_class_container_basic_reminder_creation.getClass());
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminder.class);
                     reminder_edit_intent.putExtra("EDITMODE",position);
+                    reminder_transmission_holder.position_reminder=position;
                     startActivityForResult(reminder_edit_intent,2);
-                }else if(reminder_to_edit.return_type().equals("Recurring Reminders")){
+                }else if(reminder_transmission_holder.reminder_model.return_type().equals("Recurring Reminders")){
 
-                }else if(reminder_to_edit.return_type().equals("Time Boxed Reminders")) {
+                }else if(reminder_transmission_holder.reminder_model.return_type().equals("Time Boxed Reminders")) {
 
                 }
             }
@@ -104,10 +106,12 @@ public class MainActivity extends AppCompatActivity
         if(request_code==2){
             if(result_code==RESULT_OK){
                 if(data_received.getStringArrayExtra("State")[0].equals("FetchReminderModel")){
-                    RemindersModel a=this.temporary_class_container_basic_reminder_creation.get_create_or_modify_reminder();
+                    RemindersModel a=reminder_transmission_holder.reminder_model;
+                    reminder_transmission_holder=null;
                     this.reminders_present.insert_reminder(a);
                 }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
-                    RemindersModel a=this.temporary_class_container_basic_reminder_creation.get_create_or_modify_reminder();
+                    RemindersModel a=reminder_transmission_holder.reminder_model;
+                    reminder_transmission_holder=null;
                     this.reminders_present.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
                 }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
                     this.reminders_present.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
@@ -186,5 +190,10 @@ public class MainActivity extends AppCompatActivity
     public interface transferBasicReminders{
         public void transferBasicReminders(RemindersPresenter e);
         public void transferBasicReminders(RemindersPresenter e,int position);
+    }
+
+    static class ReminderItemPositions{
+        RemindersModel reminder_model;
+        int position_reminder;
     }
 }

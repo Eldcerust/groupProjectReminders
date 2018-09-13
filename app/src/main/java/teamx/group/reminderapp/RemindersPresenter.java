@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,8 +34,8 @@ public class RemindersPresenter{
         return reminder_list;
     }
 
-    public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile){
-        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time);
+    public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile, ArrayList<CheckBoxListSingle> checkBoxListSingles){
+        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time,checkBoxListSingles);
         new_reminder.set_reminder_voice_profile(voice_profile);
         this.reminder_list.add(new_reminder);
         this.sort_reminders();
@@ -42,13 +43,19 @@ public class RemindersPresenter{
         // in other words, both has to be detected and displayed in a manner of having "2 reminders"
     }
 
+    public ArrayList<CheckBoxListSingle> new_empty_checkbox_list(){
+        ArrayList<CheckBoxListSingle> check_box_return=new ArrayList<CheckBoxListSingle>();
+        check_box_return.add(new CheckBoxListSingle(false,""));
+        return check_box_return;
+    }
+
     public void insert_reminder(RemindersModel a){
         this.reminder_list.add(a);
     }
 
-    public void change_reminders(String reminder_name,Calendar date_time,VoiceProfileModel voice_profile,int position){
+    public void change_reminders(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile,ArrayList<CheckBoxListSingle> checkBoxListSingles, int position){
         this.reminder_list.remove(position);
-        this.create_reminder(reminder_name,date_time,voice_profile);
+        this.create_reminder(reminder_name,date_time,voice_profile,checkBoxListSingles);
         sort_reminders();
     }
 
@@ -80,8 +87,8 @@ public class RemindersPresenter{
         this.reminder_list.remove(position);
     }
 
-    public void create_reminder(String reminder_name, Calendar date_time){
-        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time);
+    public void create_reminder(String reminder_name, Calendar date_time,ArrayList<CheckBoxListSingle> checkBoxListSingles){
+        RemindersModel new_reminder=new RemindersModel(reminder_name,date_time,checkBoxListSingles);
         this.reminder_list.add(new_reminder);
         this.sort_reminders();
         this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
@@ -109,6 +116,7 @@ public class RemindersPresenter{
             int month_index=c.getColumnIndex("month");
             int day_index=c.getColumnIndex("day");
             int voice_profile_index=c.getColumnIndex("voiceProfile");
+            int uuid_reminder_index=c.getColumnIndex("UUID");
 
             c.moveToFirst();
 
@@ -124,14 +132,20 @@ public class RemindersPresenter{
                 date_time.set(Calendar.SECOND, 0);
                 date_time.set(Calendar.MILLISECOND, 0);
 
+                //insert checkboxlistsingle here to sql database
+                UUID reminder_UUID=UUID.fromString(c.getString(uuid_reminder_index));
+                ArrayList<CheckBoxListSingle> check_box_list=load_from_sql_with_uuid_ver(reminder_UUID);
+
                 UUID uuid_of_profile = UUID.fromString(c.getString(voice_profile_index));
                 VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
                 if(voice_profile==null){
-                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time,check_box_list);
+                    place_holder.set_reminder_UUID(uuid_of_profile);
                     reminders_list_for_save.add(place_holder);
                 } else {
-                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time,check_box_list);
                     place_holder.set_reminder_voice_profile(voice_profile);
+                    place_holder.set_reminder_UUID(uuid_of_profile);
                     reminders_list_for_save.add(place_holder);
                 }
                 // how to determine which voice profile is this? Use UUID
@@ -143,22 +157,46 @@ public class RemindersPresenter{
         return(reminders_list_for_save);
     }
 
-    public void save_reminders_sql(ArrayList<RemindersModel> reminders_lists){
+    public void save_reminders_sql(ArrayList<RemindersModel> reminders_lists) {
         // firebase will be implemented later
-        for(int i=0;i<reminders_lists.size();i++){
-            Calendar temp_date=reminders_lists.get(i).get_reminder_date_time();
-            SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
-            Cursor cursor = my_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
-                    + "BasicReminders" + "'", null);
-            if(cursor.getCount()>0) {
-                // do we need to identify which reminder has which kind of UUID?
-                // requirement to set proper UUID for different reminders?
-                // or just nuke the entire database and make a new one?
-                my_database.execSQL("DROP TABLE BasicReminders");
-            }
-            my_database.execSQL("CREATE TABLE IF NOT EXISTS BasicReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR)");
-            // no need for creating if does not exist, so, just for the sake if there is an empty table, somehow???
-            my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile) values (\'"+reminders_lists.get(i).get_reminder_name()+"\',"+String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY))+"\',"+String.valueOf(temp_date.get(Calendar.MINUTE))+"\',"+String.valueOf(temp_date.get(Calendar.YEAR))+"\',"+String.valueOf(temp_date.get(Calendar.MONTH))+"\',"+String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH))+"\',"+String.valueOf(reminders_lists.get(i).get_reminder_voice_profile().get_name())+"\'");
+
+        SQLiteDatabase my_database = this.from_main.openOrCreateDatabase("Reminders", Context.MODE_PRIVATE, null);
+        Cursor cursor = my_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                + "BasicReminders" + "'", null);
+        if (cursor.getCount() > 0) {
+            // do we need to identify which reminder has which kind of UUID?
+            // requirement to set proper UUID for different reminders?
+            // or just nuke the entire database and make a new one?
+            my_database.execSQL("DROP TABLE BasicReminders");
+        }
+        my_database.execSQL("CREATE TABLE IF NOT EXISTS BasicReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR)");
+        // no need for creating if does not exist, so, just for the sake if there is an empty table, somehow???
+        for (int i = 0; i < reminders_lists.size(); i++) {
+            Calendar temp_date = reminders_lists.get(i).get_reminder_date_time();
+            my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile,UUID) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + String.valueOf(reminders_lists.get(i).get_reminder_voice_profile().get_name()) + "\',\'"+reminders_lists.get(i).get_reminder_UUID().toString()+"\'");
+            save_reminder_checkbox_sql(reminders_lists.get(i).get_checkbox_list(),reminders_lists.get(i).get_reminder_UUID());
+            //create a queue for this later on
+        }
+    }
+
+    public void save_reminder_checkbox_sql(ArrayList<CheckBoxListSingle> checkbox_lists,UUID uuid){
+        String uuid_of_reminder=uuid.toString();
+
+        SQLiteDatabase save_database=this.from_main.openOrCreateDatabase("CheckBoxReminders"+uuid_of_reminder,Context.MODE_PRIVATE,null);
+        Cursor cursor = save_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                + "CheckBoxReminders"+uuid_of_reminder + "'", null);
+        if(cursor.getCount()>0) {
+            // do we need to identify which reminder has which kind of UUID?
+            // requirement to set proper UUID for different reminders?
+            // or just nuke the entire database and make a new one?
+            save_database.execSQL("DROP TABLE CheckBoxReminders".concat(uuid_of_reminder));}
+
+        save_database.execSQL("CREATE TABLE IF NOT EXISTS CheckBoxReminders"+uuid_of_reminder+"(ID int NOT NULL,BooleanState VARCHAR,TextOfList VARCHAR,PRIMARY KEY (ID))");
+        for(int i=0;i<checkbox_lists.size();i++){
+            CheckBoxListSingle temp_stuff=checkbox_lists.get(i);
+            String boolean_state=String.valueOf(temp_stuff.get_state());
+            String text_of_list=temp_stuff.get_name();
+            save_database.execSQL("INSERT INTO CheckBoxReminders"+uuid_of_reminder+"(BooleanState,TextOfList) values (\'"+boolean_state+"\'+textOfList)");
         }
     }
 
@@ -171,6 +209,35 @@ public class RemindersPresenter{
         //fuse the alarm mgr model?
     }
 
+    public ArrayList<CheckBoxListSingle> load_from_sql_with_uuid_ver(UUID uuid_from_reminders){
+        //load sql based on UUID, store based on UUID
+        SQLiteDatabase checkbox_database;
+        ArrayList<CheckBoxListSingle> onereminder_list=new ArrayList<CheckBoxListSingle>();
+        Cursor c;
+        try {
+            checkbox_database = SQLiteDatabase.openDatabase("CheckBoxReminders" + uuid_from_reminders.toString(), null, Context.MODE_PRIVATE);
+            c=checkbox_database.rawQuery("SELECT * FROM CheckBoxReminders".concat(uuid_from_reminders.toString()),null);
+            int state_index=c.getColumnIndex("BooleanState");
+            int text_index=c.getColumnIndex("TextOfList");
+
+            c.moveToFirst();
+
+            while(c!=null){
+                Boolean boolean_state=Boolean.valueOf(c.getString(state_index));
+                String text_List=c.getString(text_index);
+
+                CheckBoxListSingle new_list=new CheckBoxListSingle(boolean_state,text_List);
+                onereminder_list.add(new_list);
+
+                c.moveToNext();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            return onereminder_list;
+        }
+        return onereminder_list;
+    }
+
     public void set_alarm_manager(Context main_context,int notification_count){
         RemindersModel reminders_model=fetch_earliest_reminder();
         //check conditionally if the alarm is even nearer than previous alarm, lest ignore
@@ -181,6 +248,7 @@ public class RemindersPresenter{
 
         intent.putExtra("ReminderNameAndTime",String.valueOf(reminders_model.get_reminder_name()+","+String.valueOf(reminders_model.get_reminder_date_time().getTime())));
 
+        // put code here to process multiple amount of reminders at the same time
         PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);

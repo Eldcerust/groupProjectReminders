@@ -9,10 +9,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class newBasicReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
@@ -23,15 +27,9 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     private Calendar current_date;
     private int edit_int;
     private String[] date_array;
+    public ListView list_view_basicreminders;
 
-    public newBasicReminder(RemindersModel a){
-        this.create_or_modify_reminder=a;
-        //when constructing this item, please do on the intent, as an alternative to newBasicReminder.class new newBasicReminderModel(object remindermodel).getClass()
-    }
-
-    public RemindersModel get_create_or_modify_reminder() {
-        return create_or_modify_reminder;
-    }
+    public RemindersModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
 
     public Intent create_finished_intent(String key, String[] data){
         Intent intent_finished=new Intent();
@@ -43,6 +41,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_basic_reminder);
         this.date_button=(TextView)findViewById(R.id.dateView);
         this.time_button=(TextView)findViewById(R.id.timeView);
@@ -54,24 +53,48 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         this.edit_int=getIntent().getIntExtra("EDITMODE",-1);
 
         this.check_edit_status(edit_int);
+        list_view_basicreminders=(ListView)findViewById(R.id.checkboxListView);
+
+    }
+
+    public void setup_checkboxes(){
+        final CustomListCheckBoxesListAdapter list_adapter=new CustomListCheckBoxesListAdapter(this,this.create_or_modify_reminder.get_checkbox_list());
+        list_view_basicreminders.setAdapter(list_adapter);
+        list_view_basicreminders.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // if selected, focus on text?
+                // https://stackoverflow.com/questions/47504002/limit-focus-to-only-one-fragment-in-a-container-with-multiple-added-fragments
+            }
+        });
     }
 
     public void check_edit_status(int edit_int){
         if(edit_int==Integer.MAX_VALUE){
             // do something here to fetch the reminder specified at position
             // also modify the visibility of the buttons
-            this.create_button.setVisibility(View.INVISIBLE);
-            this.edit_button.setVisibility(View.VISIBLE);
-            this.delete_button.setVisibility(View.VISIBLE);
+            this.create_button.setVisibility(View.VISIBLE);
+            this.edit_button.setVisibility(View.INVISIBLE);
+            this.delete_button.setVisibility(View.INVISIBLE);
+
+            ArrayList<CheckBoxListSingle> checkbox_initialize=new ArrayList<CheckBoxListSingle>();
+            checkbox_initialize.add(new CheckBoxListSingle(false,""));
+
+            this.create_or_modify_reminder=new RemindersModel("",Calendar.getInstance(),checkbox_initialize);
+
             this.current_date=create_or_modify_reminder.get_reminder_date_time();
             this.set_calendar_text(this.current_date);
 
             //the previous implentation I did was to use some kind of sql function to zero in what the function is about
             //interface to transfer the reminder object in?
         } else {
-            this.create_button.setVisibility(View.VISIBLE);
-            this.edit_button.setVisibility(View.INVISIBLE);
-            this.set_calendar_text(this.current_date);
+            this.create_button.setVisibility(View.INVISIBLE);
+            this.edit_button.setVisibility(View.VISIBLE);
+            this.delete_button.setVisibility(View.VISIBLE);
+
+            this.create_or_modify_reminder=MainActivity.reminder_transmission_holder.reminder_model;
+            this.edit_int=MainActivity.reminder_transmission_holder.position_reminder;
+            this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
         }
     }
 
@@ -88,7 +111,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     }
 
     public String parse_zeroes_date(int date_ten){
-        if(date_ten/10>1){
+        if(date_ten/10>=1){
             return String.valueOf(date_ten);
         }else{
             return String.valueOf(0)+date_ten;
@@ -143,6 +166,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
         String[] commandArray=new String[2];
         commandArray[0]="FetchReminderModel";
+        return_to_main();
         Intent create_button_intent=create_finished_intent("State",commandArray);
         finish();
         //use intent sent back to signal the fetch of data
@@ -165,8 +189,16 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         String[] commandArray=new String[2];
         commandArray[0]="FindAndReplace";
         commandArray[1]=String.valueOf(this.edit_int);
+        return_to_main();
         Intent edit_button_intent=create_finished_intent("State",commandArray);
         finish();
+    }
+
+    public void return_to_main(){
+        MainActivity.reminder_transmission_holder=null;
+        MainActivity.reminder_transmission_holder=new MainActivity.ReminderItemPositions();
+        MainActivity.reminder_transmission_holder.reminder_model=this.create_or_modify_reminder;
+        MainActivity.reminder_transmission_holder.position_reminder=this.edit_int;
     }
     // find a way to insert remindersmodel in and out without ridiculous strats
 }

@@ -8,7 +8,7 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <android.support.v7.widget.RecyclerView
+    <ListView
         android:id="@+id/listView"
         android:layout_width="368dp"
         android:layout_height="495dp"
