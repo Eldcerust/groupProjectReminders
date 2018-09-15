@@ -9,12 +9,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,18 +59,13 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         this.check_edit_status(edit_int);
         list_view_basicreminders=(ListView)findViewById(R.id.checkboxListView);
 
+        setup_checkboxes();
     }
 
     public void setup_checkboxes(){
         final CustomListCheckBoxesListAdapter list_adapter=new CustomListCheckBoxesListAdapter(this,this.create_or_modify_reminder.get_checkbox_list());
         list_view_basicreminders.setAdapter(list_adapter);
-        list_view_basicreminders.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // if selected, focus on text?
-                // https://stackoverflow.com/questions/47504002/limit-focus-to-only-one-fragment-in-a-container-with-multiple-added-fragments
-            }
-        });
+
     }
 
     public void check_edit_status(int edit_int){

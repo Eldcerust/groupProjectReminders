@@ -1,6 +1,7 @@
 package teamx.group.reminderapp;
 
 import android.content.Context;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
@@ -27,6 +28,7 @@ public class CustomListAdapterEditText extends android.support.design.widget.Tex
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        outAttrs.inputType= InputType.TYPE_NULL;
         return new CustomListAdapterInputConnection(super.onCreateInputConnection(outAttrs),
                 true);
     }

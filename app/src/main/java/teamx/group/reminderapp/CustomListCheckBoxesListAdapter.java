@@ -1,25 +1,41 @@
 package teamx.group.reminderapp;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Paint;
+import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 
 public class CustomListCheckBoxesListAdapter extends BaseAdapter{
     private ArrayList<CheckBoxListSingle> data_lists;
     private LayoutInflater layout_inflater;
+    private Context context_from_main;
 
     public CustomListCheckBoxesListAdapter(Context context_main,ArrayList<CheckBoxListSingle> list_of_checkboxes){
         this.data_lists=list_of_checkboxes;
         this.layout_inflater=LayoutInflater.from(context_main);
+    }
+
+    public void set_context(Context external){
+        this.context_from_main=external;
     }
 
     @Override
@@ -51,85 +67,71 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
         return i;
     }
 
-    class EditTextOverrided extends CustomListAdapterEditText{
-        public EditTextOverrided(Context context, AttributeSet attrs, int defStyle) {
-            super(context, attrs, defStyle);
-        }
-
-        public EditTextOverrided(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        public EditTextOverrided(Context context) {
-            super(context);
-        }
-
-        @Override
-        public void doSomethingOnInherition(){
-            addList();
-            setNextFocusDownId(R.id.CustomEditText);
-        }
-
-        @Override
-        public void deleteAction(){
-            deleteList();
-        }
-    }
-
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
+
+
         final ViewHolder layout_holder;
-        if(view==null){
-            view=this.layout_inflater.inflate(R.layout.list_row_checkboxes,null);
-            layout_holder=new ViewHolder();
-            layout_holder.checkBox=(CheckBox)view.findViewById(R.id.checkBox);
-            layout_holder.list_name=(TextView)view.findViewById(R.id.textView);
-            layout_holder.input_layout=(TextInputLayout)view.findViewById(R.id.textInputLayout2);
-            layout_holder.edit_text=(EditTextOverrided)view.findViewById(R.id.CustomEditText);
+        if(view==null) {
+            view = this.layout_inflater.inflate(R.layout.list_row_checkboxes, null);
+            layout_holder = new ViewHolder();
+            layout_holder.checkBox = (CheckBox) view.findViewById(R.id.checkBoxOfView);
+            //null???
+            layout_holder.input_layout = (TextInputLayout) view.findViewById(R.id.textInputLayoutInsideView);
+            layout_holder.edit_text = (TextInputEditText) view.findViewById(R.id.customEditText);
+
+            layout_holder.edit_text.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if(i2==0){
+                        deleteList();
+                        notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+                    if (editable.toString().endsWith("\n")) {
+                        editable.delete(editable.length()-1,editable.length());
+                        addList();
+                        addList();
+                        notifyDataSetChanged();
+                    }
+                }
+            });
+            layout_holder.edit_text.setFocusableInTouchMode(true);
+            /*layout_holder.edit_text.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View view, int i, KeyEvent event) {
+                    if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN && layout_holder.edit_text.toString().length()>0) {
+                        // Un-comment if you wish to cancel the backspace:
+                        addList();
+                        notifyDataSetChanged();
+                        return false;
+
+                        // require some sort of code that manipulates the arraylist into executing something
+                    } else if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode()==KeyEvent.KEYCODE_DEL && layout_holder.edit_text.toString().length()==0){
+                        deleteList();
+                        notifyDataSetChanged();
+                        return false;
+                    }
+                    return true;
+                }
+
+            });
+            //why not override form here
         }else{
             layout_holder=(ViewHolder)view.getTag();
+        }*/
+
         }
 
-        layout_holder.checkBox.setChecked(data_lists.get(i).get_state());
-        String text_list=this.data_lists.get(i).get_name();
-        layout_holder.list_name.setText(this.data_lists.get(i).get_name());
 
-        layout_holder.list_name.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                layout_holder.list_name.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        layout_holder.edit_text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if(!b){
-                    layout_holder.edit_text.setVisibility(View.INVISIBLE);
-                    layout_holder.list_name.setText(layout_holder.edit_text.getText());
-                    layout_holder.list_name.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        layout_holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(layout_holder.edit_text.length()>0){
-                    if(b==true){
-                        layout_holder.list_name.setPaintFlags(layout_holder.list_name.getPaintFlags()| Paint.STRIKE_THRU_TEXT_FLAG);
-                    } else{
-                        layout_holder.list_name.setPaintFlags(layout_holder.list_name.getPaintFlags()| Paint.STRIKE_THRU_TEXT_FLAG);
-                    }
-                } else {
-                    // create snackbar showing that the operation cannot be done when the thing is empty
-                    if(b==true){
-                        layout_holder.checkBox.setChecked(false);
-                    }
-                }
-
-            }
-        });
         // if text view has text, edit text is hidden
         // edit text should not phase out if the user has not entered anything and tried to skip
 
@@ -138,9 +140,8 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
     static class ViewHolder{
         //button,text
-        TextView list_name;
         CheckBox checkBox;
         TextInputLayout input_layout;
-        EditTextOverrided edit_text;
+        TextInputEditText edit_text;
     }
 }
