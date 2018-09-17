@@ -7,6 +7,7 @@ import android.support.design.widget.TextInputLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -45,12 +46,10 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
     public void addList(){
         this.data_lists.add(new CheckBoxListSingle(false,""));
-        notifyDataSetChanged();
     }
 
     public void deleteList(){
         this.data_lists.remove(this.data_lists.size()-1);
-        notifyDataSetChanged();
     }
 
     public ArrayList<CheckBoxListSingle> return_changed_list(){
@@ -80,10 +79,25 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
             layout_holder.input_layout = (TextInputLayout) view.findViewById(R.id.textInputLayoutInsideView);
             layout_holder.edit_text = (TextInputEditText) view.findViewById(R.id.customEditText);
 
-            layout_holder.edit_text.addTextChangedListener(new TextWatcher() {
+            layout_holder.edit_text.addTextChangedListener(new TextWatcherModified() {
                 @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+                public void afterTextChanged(Editable editable, boolean backSpace) {
+                    int i = editable.toString().indexOf("\n");
+                    if ( i != -1 ) {
+                        if (editable.toString().endsWith("\n")) {
+                            editable.delete(editable.length() - 1, editable.length());
+                            addList();
+                            addList();
+                            notifyDataSetChanged();
+                            layout_holder.edit_text.requestFocus(View.FOCUS_DOWN);
+                            Log.i("Number of checkbox items is",String.valueOf(data_lists.size()));
+                        } else {
+                            editable.replace(i, i+1, "");
+                            addList();
+                            notifyDataSetChanged();
+                            layout_holder.edit_text.requestFocus(R.id.customEditText);
+                        }
+                    }
                 }
 
                 @Override
@@ -94,16 +108,9 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
                     }
                 }
 
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    if (editable.toString().endsWith("\n")) {
-                        editable.delete(editable.length()-1,editable.length());
-                        addList();
-                        addList();
-                        notifyDataSetChanged();
-                    }
-                }
-            });
+
+
+                });
             layout_holder.edit_text.setFocusableInTouchMode(true);
             /*layout_holder.edit_text.setOnKeyListener(new View.OnKeyListener() {
                 @Override

@@ -14,6 +14,7 @@ import java.util.UUID;
 import android.content.BroadcastReceiver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 
 public class RemindersPresenter{
     protected ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
@@ -26,7 +27,7 @@ public class RemindersPresenter{
     public RemindersPresenter(Context context,VoiceProfilePresenter presenter_model){
         this.from_main=context.getApplicationContext();
         this.presenter_for_presets=presenter_model;
-        //this.reminder_list=load_reminders_from_sql();
+        this.reminder_list=load_reminders_from_sql();
         sort_reminders();
     }
 
@@ -101,14 +102,10 @@ public class RemindersPresenter{
 
     public ArrayList<RemindersModel> load_reminders_from_sql (){
         SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
-        Cursor c = my_database.rawQuery("SELECT * FROM BasicReminders ORDER BY year,month,date,day,hour,minute",null);
         ArrayList<RemindersModel> reminders_list_for_save=new ArrayList<RemindersModel>();
-        //determine structure
-        //title,year,month,date,day,hour,minute,
-        //create reminder and insert one by one?
-        int count=0;
 
-        try{
+        try {
+            Cursor c = my_database.rawQuery("SELECT * FROM BasicReminders ORDER BY year,month,date,day,hour,minute", null);
             int title_index=c.getColumnIndex("title");
             int hour_index=c.getColumnIndex("hour");
             int minute_index=c.getColumnIndex("minute");
@@ -151,7 +148,14 @@ public class RemindersPresenter{
                 // how to determine which voice profile is this? Use UUID
             }
         } catch (Exception e){
-            return(reminders_list_for_save);
+            if(reminders_list_for_save!=null && reminders_list_for_save.size()>0){
+                return(reminders_list_for_save);
+            } else if(reminders_list_for_save==null || reminders_list_for_save.size()==0){
+                ArrayList<CheckBoxListSingle> new_list=new ArrayList<CheckBoxListSingle>();
+                new_list.add(new CheckBoxListSingle(false,""));
+                reminders_list_for_save.add(new RemindersModel("",Calendar.getInstance(),new_list));
+                return reminders_list_for_save;
+            }
         }
 
         return(reminders_list_for_save);

@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class CustomListAdapter extends BaseAdapter{
@@ -57,12 +58,21 @@ public class CustomListAdapter extends BaseAdapter{
         //set the text of the views
         view_lists.name_view.setText(this.reminder_lists.get(position).get_reminder_name());
         view_lists.name_view.setTextColor(Color.BLACK);
-        view_lists.time_view.setText(this.reminder_lists.get(position).get_reminder_date_time().toString());
+
+        SimpleDateFormat date_format=new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        date_format.getTimeZone();
+        String date_string=date_format.format(this.reminder_lists.get(position).get_reminder_date_time().getTime());
+        view_lists.time_view.setText(date_string);
         view_lists.time_view.setTextColor(Color.BLACK);
+
         view_lists.type_view.setText(this.reminder_lists.get(position).return_type());
         view_lists.type_view.setTextColor(Color.BLACK);
 
         return convert_view;
+    }
+
+    public void set_data_refresh(){
+        notifyDataSetChanged();
     }
 
     static class ViewHolder{

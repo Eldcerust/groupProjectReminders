@@ -23,7 +23,7 @@ public class VoiceProfilePresenter{
 
     public ArrayList<VoiceProfileModel> load_sql_voice_profiles(){
         SQLiteDatabase my_database=this.context_from_main.openOrCreateDatabase("VoiceProfiles", Context.MODE_PRIVATE,null);
-        ArrayList<VoiceProfileModel> reminders_list_for_save=new ArrayList<VoiceProfileModel>();
+        ArrayList<VoiceProfileModel> voice_profiles=new ArrayList<VoiceProfileModel>();
         try{
             Cursor c = my_database.rawQuery("SELECT * FROM Profiles ORDER BY fileName,color,booleanTTS",null);
         //determine structure
@@ -48,14 +48,20 @@ public class VoiceProfilePresenter{
                 VoiceProfileModel iteration_model=new VoiceProfileModel(color_fetched,boolean_tts,file);
                 iteration_model.set_UUID(uuid_profile);
 
-                reminders_list_for_save.add(iteration_model);
+                voice_profiles.add(iteration_model);
 
                 c.moveToNext();
             }
         } catch (Exception e){
-            return reminders_list_for_save;
+            if(voice_profiles.size()>0 && voice_profiles!=null){
+                return voice_profiles;
+            } else if(voice_profiles.size()==0 || voice_profiles==null){
+                ArrayList<VoiceProfileModel> new_empty_model=new ArrayList<VoiceProfileModel>();
+                new_empty_model.add(new VoiceProfileModel(new Color(),false,null));
+                return new_empty_model;
+            }
         }
-        return reminders_list_for_save;
+        return voice_profiles;
     }
 
     public void save_sql(Context context,ArrayList<VoiceProfileModel> voice_profiles_to_save){

@@ -27,10 +27,12 @@ public class MainActivity extends AppCompatActivity
     private VoiceProfilePresenter profiles_voice;
     private RemindersPresenter reminders_present;
     private ListView list_view;
+    private CustomListAdapter list_adapter;
     private AlarmManager alarm_mgr;
     private VoiceProfilePresenter voice_access;
     private newBasicReminder temporary_class_container_basic_reminder_creation;
-    public static ReminderItemPositions reminder_transmission_holder;
+    public static RemindersModel reminder_transmission_holder;
+    public static int reminder_position;
 
 
     @Override
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity
         this.list_view=(ListView)findViewById(R.id.listView);
 
         fetch_data();
+        set_list_on_display();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -70,31 +73,32 @@ public class MainActivity extends AppCompatActivity
 
     public void fetch_data(){
         profiles_voice=new VoiceProfilePresenter(this.getApplicationContext());
-        //profiles_voice.load_sql_voice_profiles();
+        profiles_voice.load_sql_voice_profiles();
         reminders_present=new RemindersPresenter(this.getApplicationContext(),profiles_voice);
-        //reminders_present.load_reminders_from_sql();
+        reminders_present.load_reminders_from_sql();
     }
 
     public void set_list_on_display() {
-        CustomListAdapter adapter_for_list=new CustomListAdapter(this,reminders_present.get_reminder_list());
-        list_view.setAdapter(adapter_for_list);
+        this.list_adapter=new CustomListAdapter(this,reminders_present.get_reminder_list());
+        list_view.setAdapter(this.list_adapter);
         list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Object list_view_object=list_view.getItemAtPosition(position);
+                System.out.println(list_view_object);
                 // how to get the type of the object without intentionally casting it first?
                 // cast it and test for return type?
-                reminder_transmission_holder.reminder_model=(RemindersModel)list_view_object;
-                if(reminder_transmission_holder.reminder_model.return_type().equals("Basic Reminders")){
+                reminder_transmission_holder=reminders_present.get_reminder(position);
+                if(reminder_transmission_holder.return_type().equals("Basic Reminders")){
                     //the above if function serve to check if there are overrides to determine what type of object is the item. Child class overrides will be enforced even if cast.
                     //insert code for basic reminders editor
                     Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminder.class);
                     reminder_edit_intent.putExtra("EDITMODE",position);
-                    reminder_transmission_holder.position_reminder=position;
+                    reminder_position=position;
                     startActivityForResult(reminder_edit_intent,2);
-                }else if(reminder_transmission_holder.reminder_model.return_type().equals("Recurring Reminders")){
+                }else if(reminder_transmission_holder.return_type().equals("Recurring Reminders")){
 
-                }else if(reminder_transmission_holder.reminder_model.return_type().equals("Time Boxed Reminders")) {
+                }else if(reminder_transmission_holder.return_type().equals("Time Boxed Reminders")) {
 
                 }
             }
@@ -106,16 +110,17 @@ public class MainActivity extends AppCompatActivity
         if(request_code==2){
             if(result_code==RESULT_OK){
                 if(data_received.getStringArrayExtra("State")[0].equals("FetchReminderModel")){
-                    RemindersModel a=reminder_transmission_holder.reminder_model;
+                    RemindersModel a=reminder_transmission_holder;
                     reminder_transmission_holder=null;
                     this.reminders_present.insert_reminder(a);
                 }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
-                    RemindersModel a=reminder_transmission_holder.reminder_model;
+                    RemindersModel a=reminder_transmission_holder;
                     reminder_transmission_holder=null;
                     this.reminders_present.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
                 }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
                     this.reminders_present.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
                 }
+                this.list_adapter.set_data_refresh();
                 //create function on reminderpresenter to edit sql
             }
         }
@@ -190,10 +195,5 @@ public class MainActivity extends AppCompatActivity
     public interface transferBasicReminders{
         public void transferBasicReminders(RemindersPresenter e);
         public void transferBasicReminders(RemindersPresenter e,int position);
-    }
-
-    static class ReminderItemPositions{
-        RemindersModel reminder_model;
-        int position_reminder;
     }
 }

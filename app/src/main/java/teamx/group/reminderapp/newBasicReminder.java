@@ -91,8 +91,8 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
             this.edit_button.setVisibility(View.VISIBLE);
             this.delete_button.setVisibility(View.VISIBLE);
 
-            this.create_or_modify_reminder=MainActivity.reminder_transmission_holder.reminder_model;
-            this.edit_int=MainActivity.reminder_transmission_holder.position_reminder;
+            this.create_or_modify_reminder=MainActivity.reminder_transmission_holder;
+            this.edit_int=MainActivity.reminder_position;
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
         }
     }
@@ -161,6 +161,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void create_button_onclick(View v){
         String title_determined=this.inserted_title.getEditText().getText().toString();
+        System.out.println(title_determined);
         this.create_or_modify_reminder.set_reminder_name(title_determined);
         this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
         String[] commandArray=new String[2];
@@ -183,6 +184,8 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void edit_button_onclick(View v){
         String title_determined=this.inserted_title.getEditText().getText().toString();
+        System.out.println(title_determined);
+
         this.create_or_modify_reminder.set_reminder_name(title_determined);
         this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
         String[] commandArray=new String[2];
@@ -195,9 +198,8 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void return_to_main(){
         MainActivity.reminder_transmission_holder=null;
-        MainActivity.reminder_transmission_holder=new MainActivity.ReminderItemPositions();
-        MainActivity.reminder_transmission_holder.reminder_model=this.create_or_modify_reminder;
-        MainActivity.reminder_transmission_holder.position_reminder=this.edit_int;
+        MainActivity.reminder_transmission_holder=this.create_or_modify_reminder;
+        MainActivity.reminder_position=this.edit_int;
     }
     // find a way to insert remindersmodel in and out without ridiculous strats
 }
