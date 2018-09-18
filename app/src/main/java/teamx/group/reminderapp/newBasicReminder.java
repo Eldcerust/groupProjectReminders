@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.DialogFragment;
@@ -17,9 +18,11 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -32,6 +35,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     private int edit_int;
     private String[] date_array;
     public ListView list_view_basicreminders;
+    private CustomListCheckBoxesListAdapter list_adapter;
 
     public RemindersModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
 
@@ -63,9 +67,9 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     }
 
     public void setup_checkboxes(){
-        final CustomListCheckBoxesListAdapter list_adapter=new CustomListCheckBoxesListAdapter(this,this.create_or_modify_reminder.get_checkbox_list());
-        list_view_basicreminders.setAdapter(list_adapter);
-
+        this.list_adapter=new CustomListCheckBoxesListAdapter(this,this.create_or_modify_reminder.get_checkbox_list());
+        this.list_adapter.set_array_checkbox(this.create_or_modify_reminder.get_checkbox_list());
+        this.list_view_basicreminders.setAdapter(list_adapter);
     }
 
     public void check_edit_status(int edit_int){
@@ -94,17 +98,18 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
             this.create_or_modify_reminder=MainActivity.reminder_transmission_holder;
             this.edit_int=MainActivity.reminder_position;
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
+            this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
         }
     }
 
     public String[] parse_calendar_to_stringarray(Calendar cal){
-        String[] date_array=new String[5];
+        String[] date_array=new String[2];
 
-        date_array[0]=parse_zeroes_date(cal.get(Calendar.DAY_OF_MONTH));
-        date_array[1]=parse_zeroes_date(cal.get(Calendar.MONTH));
-        date_array[2]=parse_zeroes_date(cal.get(Calendar.YEAR));
-        date_array[3]=parse_zeroes_date(cal.get(Calendar.HOUR_OF_DAY));
-        date_array[4]=parse_zeroes_date(cal.get(Calendar.MINUTE));
+        SimpleDateFormat date_format=new SimpleDateFormat("EEE, dd MMM yyyy");
+        SimpleDateFormat time_format=new SimpleDateFormat("HH:mm");
+
+        date_array[0]=date_format.format(cal.getTime());
+        date_array[1]=time_format.format(cal.getTime());
 
         return date_array;
     }
@@ -120,10 +125,11 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     public void set_calendar_text(Calendar cal){
         cal.set(Calendar.SECOND,0);
         cal.set(Calendar.MILLISECOND,0);
+
         String[] parsed_cal=parse_calendar_to_stringarray(cal);
 
-        this.date_button.setText(parsed_cal[0]+"/"+parsed_cal[1]+"/"+parsed_cal[2]);
-        this.time_button.setText(parsed_cal[3]+":"+parsed_cal[4]);
+        this.date_button.setText(parsed_cal[0]);
+        this.time_button.setText(parsed_cal[1]);
     }
 
     public void show_time_picker(View v){
@@ -140,9 +146,9 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     @Override
     public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
         //set the date of the string array and also the calendar?
-        this.current_date.set(Calendar.DAY_OF_MONTH,i);
+        this.current_date.set(Calendar.DAY_OF_MONTH,i2);
         this.current_date.set(Calendar.MONTH,i1);
-        this.current_date.set(Calendar.YEAR,i2);
+        this.current_date.set(Calendar.YEAR,i);
         set_calendar_text(this.current_date);
     }
 
@@ -161,14 +167,20 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void create_button_onclick(View v){
         String title_determined=this.inserted_title.getEditText().getText().toString();
-        System.out.println(title_determined);
-        this.create_or_modify_reminder.set_reminder_name(title_determined);
-        this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
-        String[] commandArray=new String[2];
-        commandArray[0]="FetchReminderModel";
-        return_to_main();
-        Intent create_button_intent=create_finished_intent("State",commandArray);
-        finish();
+        if(title_determined.length()>0){
+            System.out.println(title_determined);
+            this.create_or_modify_reminder.set_reminder_name(title_determined);
+            this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
+            this.list_adapter.save_checkbox();
+            this.create_or_modify_reminder.set_list(this.list_adapter.return_changed_list());
+            String[] commandArray=new String[2];
+            commandArray[0]="FetchReminderModel";
+            return_to_main();
+            Intent create_button_intent=create_finished_intent("State",commandArray);
+            finish();
+        } else {
+            Toast.makeText(this.getApplicationContext(),"Reminder name should not be zero. Please try again.",Toast.LENGTH_LONG).show();
+        }
         //use intent sent back to signal the fetch of data
     }
 
@@ -184,16 +196,20 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void edit_button_onclick(View v){
         String title_determined=this.inserted_title.getEditText().getText().toString();
-        System.out.println(title_determined);
-
-        this.create_or_modify_reminder.set_reminder_name(title_determined);
-        this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
-        String[] commandArray=new String[2];
-        commandArray[0]="FindAndReplace";
-        commandArray[1]=String.valueOf(this.edit_int);
-        return_to_main();
-        Intent edit_button_intent=create_finished_intent("State",commandArray);
-        finish();
+        if(title_determined.length()>0) {
+            this.create_or_modify_reminder.set_reminder_name(title_determined);
+            this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
+            this.list_adapter.save_checkbox();
+            this.create_or_modify_reminder.set_list(this.list_adapter.return_changed_list());
+            String[] commandArray=new String[2];
+            commandArray[0]="FindAndReplace";
+            commandArray[1]=String.valueOf(this.edit_int);
+            return_to_main();
+            Intent edit_button_intent=create_finished_intent("State",commandArray);
+            finish();
+        } else {
+            Toast.makeText(this.getApplicationContext(),"Reminder name should not be zero. Please try again.",Toast.LENGTH_LONG).show();
+        }
     }
 
     public void return_to_main(){

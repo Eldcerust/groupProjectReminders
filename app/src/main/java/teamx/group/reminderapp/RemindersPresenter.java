@@ -13,8 +13,10 @@ import java.util.UUID;
 
 import android.content.BroadcastReceiver;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 public class RemindersPresenter{
     protected ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
@@ -100,12 +102,13 @@ public class RemindersPresenter{
         return(this.reminder_list.get(position_of_reminder));
     }
 
-    public ArrayList<RemindersModel> load_reminders_from_sql (){
+    public ArrayList<RemindersModel> load_reminders_from_sql () {
         SQLiteDatabase my_database=this.from_main.openOrCreateDatabase("Reminders",Context.MODE_PRIVATE,null);
         ArrayList<RemindersModel> reminders_list_for_save=new ArrayList<RemindersModel>();
+        ArrayList<Thread> threads_load_checklist=new ArrayList<Thread>();
 
         try {
-            Cursor c = my_database.rawQuery("SELECT * FROM BasicReminders ORDER BY year,month,date,day,hour,minute", null);
+            Cursor c = my_database.rawQuery("SELECT * FROM BasicReminders ORDER BY year,month,day,hour,minute", null);
             int title_index=c.getColumnIndex("title");
             int hour_index=c.getColumnIndex("hour");
             int minute_index=c.getColumnIndex("minute");
@@ -114,10 +117,11 @@ public class RemindersPresenter{
             int day_index=c.getColumnIndex("day");
             int voice_profile_index=c.getColumnIndex("voiceProfile");
             int uuid_reminder_index=c.getColumnIndex("UUID");
+            int count=0;
 
             c.moveToFirst();
 
-            while(c!=null) {
+            for(int i=0;i<c.getCount();i++){
                 String reminder_name = c.getString(title_index);
 
                 Calendar date_time = Calendar.getInstance();
@@ -130,24 +134,43 @@ public class RemindersPresenter{
                 date_time.set(Calendar.MILLISECOND, 0);
 
                 //insert checkboxlistsingle here to sql database
-                UUID reminder_UUID=UUID.fromString(c.getString(uuid_reminder_index));
-                ArrayList<CheckBoxListSingle> check_box_list=load_from_sql_with_uuid_ver(reminder_UUID);
+                UUID reminder_UUID=UUID.fromString(String.join("-",c.getString(uuid_reminder_index).split("_")));
 
-                UUID uuid_of_profile = UUID.fromString(c.getString(voice_profile_index));
-                VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
-                if(voice_profile==null){
-                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time,check_box_list);
-                    place_holder.set_reminder_UUID(uuid_of_profile);
+                String voice_profile_str=c.getString(voice_profile_index);
+                add_thread(threads_load_checklist,reminder_UUID,count);
+
+                if(voice_profile_str.equals("null")){
+                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
+                    place_holder.set_reminder_UUID(reminder_UUID);
                     reminders_list_for_save.add(place_holder);
                 } else {
-                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time,check_box_list);
+                    UUID uuid_of_profile = UUID.fromString(String.join("-",c.getString(voice_profile_index).split("_")));
+                    VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
+                    RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
                     place_holder.set_reminder_voice_profile(voice_profile);
                     place_holder.set_reminder_UUID(uuid_of_profile);
                     reminders_list_for_save.add(place_holder);
                 }
+                try {
+                    c.moveToNext();
+                } catch (Exception e){
+                    continue;
+                }
+                count++;
                 // how to determine which voice profile is this? Use UUID
             }
+            c.close();
+            my_database.close();
+            for(int i=0;i<threads_load_checklist.size();i++){
+                try {
+                    threads_load_checklist.get(i).join();
+                    threads_load_checklist.get(i).run();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         } catch (Exception e){
+            System.out.println("REEEEEEE".concat(e.toString()));
             if(reminders_list_for_save!=null && reminders_list_for_save.size()>0){
                 return(reminders_list_for_save);
             } else if(reminders_list_for_save==null || reminders_list_for_save.size()==0){
@@ -159,6 +182,15 @@ public class RemindersPresenter{
         }
 
         return(reminders_list_for_save);
+    }
+
+    public ArrayList<Thread> add_thread(ArrayList<Thread> thread_master,UUID uuid_reminders,int position){
+        Thread a=new Thread(()->{
+            ArrayList<CheckBoxListSingle> list_holder=load_from_sql_with_uuid_ver(uuid_reminders);
+            this.reminder_list.get(position).set_list(list_holder);
+        });
+        thread_master.add(a);
+        return thread_master;
     }
 
     public void save_reminders_sql(ArrayList<RemindersModel> reminders_lists) {
@@ -173,34 +205,47 @@ public class RemindersPresenter{
             // or just nuke the entire database and make a new one?
             my_database.execSQL("DROP TABLE BasicReminders");
         }
-        my_database.execSQL("CREATE TABLE IF NOT EXISTS BasicReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR)");
+        my_database.execSQL("CREATE TABLE IF NOT EXISTS BasicReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR,UUID VARCHAR)");
         // no need for creating if does not exist, so, just for the sake if there is an empty table, somehow???
         for (int i = 0; i < reminders_lists.size(); i++) {
             Calendar temp_date = reminders_lists.get(i).get_reminder_date_time();
-            my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile,UUID) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + String.valueOf(reminders_lists.get(i).get_reminder_voice_profile().get_name()) + "\',\'"+reminders_lists.get(i).get_reminder_UUID().toString()+"\'");
-            save_reminder_checkbox_sql(reminders_lists.get(i).get_checkbox_list(),reminders_lists.get(i).get_reminder_UUID());
+            try {
+                my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile,UUID) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + String.valueOf(reminders_lists.get(i).get_reminder_voice_profile().get_name()) + "\',\'" + reminders_lists.get(i).get_reminder_UUID().toString() + "\')");
+                save_reminder_checkbox_sql(reminders_lists.get(i).get_checkbox_list(), reminders_lists.get(i).get_reminder_UUID());
+            } catch (NullPointerException e) {
+                if(e.toString().equals("java.lang.NullPointerException: Attempt to invoke virtual method 'java.util.UUID teamx.group.reminderapp.VoiceProfileModel.get_name()' on a null object reference")){
+                    System.out.println("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile,UUID) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + "null" + "\',\'" + reminders_lists.get(i).get_reminder_UUID().toString() + "\')");
+                    save_reminder_checkbox_sql(reminders_lists.get(i).get_checkbox_list(), reminders_lists.get(i).get_reminder_UUID());
+                    my_database.execSQL("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile,UUID) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + "null" + "\',\'" + reminders_lists.get(i).get_reminder_UUID().toString() + "\')");
+                } else {
+                    throw e;
+                }
+            }
             //create a queue for this later on
         }
     }
 
     public void save_reminder_checkbox_sql(ArrayList<CheckBoxListSingle> checkbox_lists,UUID uuid){
-        String uuid_of_reminder=uuid.toString();
+        String uuid_of_reminder=String.join("_",uuid.toString().split("-"));
 
-        SQLiteDatabase save_database=this.from_main.openOrCreateDatabase("CheckBoxReminders"+uuid_of_reminder,Context.MODE_PRIVATE,null);
+        SQLiteDatabase save_database=this.from_main.openOrCreateDatabase("CheckBoxReminders",Context.MODE_PRIVATE,null);
         Cursor cursor = save_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
                 + "CheckBoxReminders"+uuid_of_reminder + "'", null);
+        System.out.println("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                + "CheckBoxReminders"+uuid_of_reminder + "'");
         if(cursor.getCount()>0) {
             // do we need to identify which reminder has which kind of UUID?
             // requirement to set proper UUID for different reminders?
             // or just nuke the entire database and make a new one?
             save_database.execSQL("DROP TABLE CheckBoxReminders".concat(uuid_of_reminder));}
-
-        save_database.execSQL("CREATE TABLE IF NOT EXISTS CheckBoxReminders"+uuid_of_reminder+"(ID int NOT NULL,BooleanState VARCHAR,TextOfList VARCHAR,PRIMARY KEY (ID))");
+        System.out.println("CREATE TABLE IF NOT EXISTS CheckBoxReminders\'"+uuid_of_reminder+"\'(ID int NOT NULL,BooleanState VARCHAR,TextOfList VARCHAR,PRIMARY KEY (ID))");
+        save_database.execSQL("CREATE TABLE IF NOT EXISTS CheckBoxReminders"+uuid_of_reminder+"(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,BooleanState VARCHAR,TextOfList VARCHAR)");
         for(int i=0;i<checkbox_lists.size();i++){
             CheckBoxListSingle temp_stuff=checkbox_lists.get(i);
             String boolean_state=String.valueOf(temp_stuff.get_state());
             String text_of_list=temp_stuff.get_name();
-            save_database.execSQL("INSERT INTO CheckBoxReminders"+uuid_of_reminder+"(BooleanState,TextOfList) values (\'"+boolean_state+"\'+textOfList)");
+            System.out.println("INSERT INTO CheckBoxReminders"+uuid_of_reminder+"(BooleanState,TextOfList) values (\'"+boolean_state+"\',\'"+text_of_list+"\')");
+            save_database.execSQL("INSERT INTO CheckBoxReminders"+uuid_of_reminder+"(BooleanState,TextOfList) values (\'"+boolean_state+"\',\'"+text_of_list+"\')");
         }
     }
 
@@ -216,27 +261,33 @@ public class RemindersPresenter{
     public ArrayList<CheckBoxListSingle> load_from_sql_with_uuid_ver(UUID uuid_from_reminders){
         //load sql based on UUID, store based on UUID
         SQLiteDatabase checkbox_database;
+        String uuid_string=String.join("_",uuid_from_reminders.toString().split("-"));
         ArrayList<CheckBoxListSingle> onereminder_list=new ArrayList<CheckBoxListSingle>();
         Cursor c;
         try {
-            checkbox_database = SQLiteDatabase.openDatabase("CheckBoxReminders" + uuid_from_reminders.toString(), null, Context.MODE_PRIVATE);
-            c=checkbox_database.rawQuery("SELECT * FROM CheckBoxReminders".concat(uuid_from_reminders.toString()),null);
-            int state_index=c.getColumnIndex("BooleanState");
-            int text_index=c.getColumnIndex("TextOfList");
+            checkbox_database = this.from_main.openOrCreateDatabase("CheckBoxReminders", Context.MODE_PRIVATE,null);
+            c = checkbox_database.rawQuery("SELECT * FROM CheckBoxReminders".concat(uuid_string), null);
+            int state_index = c.getColumnIndex("BooleanState");
+            int text_index = c.getColumnIndex("TextOfList");
 
             c.moveToFirst();
 
-            while(c!=null){
-                Boolean boolean_state=Boolean.valueOf(c.getString(state_index));
-                String text_List=c.getString(text_index);
+            while (c != null) {
+                Boolean boolean_state = Boolean.valueOf(c.getString(state_index));
+                String text_List = c.getString(text_index);
 
-                CheckBoxListSingle new_list=new CheckBoxListSingle(boolean_state,text_List);
+                CheckBoxListSingle new_list = new CheckBoxListSingle(boolean_state, text_List);
                 onereminder_list.add(new_list);
 
                 c.moveToNext();
             }
+            c.close();
+            checkbox_database.close();
         } catch (Exception e){
-            e.printStackTrace();
+            if(e.toString().equals("android.database.sqlite.SQLiteCantOpenDatabaseException: unknown error (code 14 SQLITE_CANTOPEN): Could not open database")){
+                Log.i("Error","Initialize db later");
+                return onereminder_list;
+            }
             return onereminder_list;
         }
         return onereminder_list;

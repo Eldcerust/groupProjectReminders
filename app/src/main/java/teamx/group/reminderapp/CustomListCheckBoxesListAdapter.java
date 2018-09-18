@@ -2,6 +2,7 @@ package teamx.group.reminderapp;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Paint;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.text.Editable;
@@ -23,16 +24,27 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+
+import javax.security.auth.Subject;
 
 public class CustomListCheckBoxesListAdapter extends BaseAdapter{
     private ArrayList<CheckBoxListSingle> data_lists;
     private LayoutInflater layout_inflater;
     private Context context_from_main;
+    private ArrayList<Thread> save_threads=new ArrayList<Thread>();
+
 
     public CustomListCheckBoxesListAdapter(Context context_main,ArrayList<CheckBoxListSingle> list_of_checkboxes){
         this.data_lists=list_of_checkboxes;
         this.layout_inflater=LayoutInflater.from(context_main);
+    }
+
+    public void save_checkbox(){
+        for(int a=0;a<save_threads.size();a++){
+            save_threads.get(a).run();
+        }
     }
 
     public void set_context(Context external){
@@ -56,6 +68,11 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
         return this.data_lists;
     }
 
+    public void set_array_checkbox(ArrayList<CheckBoxListSingle> check_box){
+        this.data_lists=check_box;
+        notifyDataSetChanged();
+    }
+
     @Override
     public Object getItem(int i) {
         return data_lists.get(i);
@@ -75,10 +92,20 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
             view = this.layout_inflater.inflate(R.layout.list_row_checkboxes, null);
             layout_holder = new ViewHolder();
             layout_holder.checkBox = (CheckBox) view.findViewById(R.id.checkBoxOfView);
+            boolean state=this.data_lists.get(i).get_state();
+            layout_holder.checkBox.setChecked(state);
+            layout_holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    layout_holder.edit_text.setPaintFlags(layout_holder.edit_text.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+            });
+
             //null???
             layout_holder.input_layout = (TextInputLayout) view.findViewById(R.id.textInputLayoutInsideView);
             layout_holder.edit_text = (TextInputEditText) view.findViewById(R.id.customEditText);
-
+            String list_text=this.data_lists.get(i).get_name();
+            layout_holder.edit_text.setText(list_text);
             layout_holder.edit_text.addTextChangedListener(new TextWatcherModified() {
                 @Override
                 public void afterTextChanged(Editable editable, boolean backSpace) {
@@ -102,7 +129,7 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
                 @Override
                 public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    if(i2==0){
+                    if(i2==0 && data_lists.size()>1){
                         deleteList();
                         notifyDataSetChanged();
                     }
@@ -111,7 +138,22 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
 
                 });
+            layout_holder.edit_text.setText(this.data_lists.get(i).get_name());
             layout_holder.edit_text.setFocusableInTouchMode(true);
+
+            if(state){
+                layout_holder.checkBox.setChecked(true);
+                layout_holder.edit_text.setPaintFlags(layout_holder.edit_text.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                layout_holder.checkBox.setChecked(false);
+                layout_holder.edit_text.setPaintFlags(layout_holder.edit_text.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+            }
+            save_threads.add(new Thread(()->{
+                CheckBoxListSingle a=this.data_lists.get(i);
+                a.set_name(layout_holder.edit_text.getText().toString());
+                a.set_state(layout_holder.checkBox.isChecked());
+                this.data_lists.set(i,a);
+            }));
             /*layout_holder.edit_text.setOnKeyListener(new View.OnKeyListener() {
                 @Override
                 public boolean onKey(View view, int i, KeyEvent event) {

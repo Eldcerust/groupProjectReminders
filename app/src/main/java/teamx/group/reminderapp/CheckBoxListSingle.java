@@ -21,6 +21,8 @@ public class CheckBoxListSingle {
         this.checkbox_name=title;
     }
 
+    public void set_state(Boolean state){this.finished_list=state;}
+
     public String get_name(){
         return this.checkbox_name;
     }

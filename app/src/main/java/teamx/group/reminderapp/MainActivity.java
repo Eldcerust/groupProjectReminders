@@ -71,11 +71,21 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    public RemindersPresenter check_reminder_presenter_initial(RemindersPresenter reminders_present) {
+        if(reminders_present.get_reminder_list().size()==1 && reminders_present.get_reminder_list().get(0).get_reminder_name().equals("")){
+            reminders_present.delete_reminder_position(0);
+            return reminders_present;
+        } else {
+            return reminders_present;
+        }
+    }
+
     public void fetch_data(){
-        profiles_voice=new VoiceProfilePresenter(this.getApplicationContext());
-        profiles_voice.load_sql_voice_profiles();
-        reminders_present=new RemindersPresenter(this.getApplicationContext(),profiles_voice);
-        reminders_present.load_reminders_from_sql();
+        this.reminders_present=new RemindersPresenter(this.getApplicationContext(),profiles_voice);
+        this.reminders_present.load_reminders_from_sql();
+        this.reminders_present=check_reminder_presenter_initial(this.reminders_present);
+        this.profiles_voice=new VoiceProfilePresenter(this.getApplicationContext());
+        this.profiles_voice.load_sql_voice_profiles();
     }
 
     public void set_list_on_display() {
@@ -120,6 +130,7 @@ public class MainActivity extends AppCompatActivity
                 }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
                     this.reminders_present.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
                 }
+                this.reminders_present.save_reminders_sql(this.reminders_present.reminder_list);
                 this.list_adapter.set_data_refresh();
                 //create function on reminderpresenter to edit sql
             }

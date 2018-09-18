@@ -20,6 +20,15 @@ public class RemindersModel {
         this.checkbox_list=bulletin_list;
     }
 
+    public RemindersModel(String reminder_name,Calendar reminder_date_time){
+        //this is the onCreate(constructor) of the class
+        this.reminder_name=reminder_name;
+        this.reminder_date_time=reminder_date_time;
+        this.reminder_UUID=UUID.randomUUID();
+        this.checkbox_list=new ArrayList<CheckBoxListSingle>();
+        this.checkbox_list.add(new CheckBoxListSingle(false,""));
+    }
+
     public void set_reminder_name(String string){this.reminder_name=string;}
 
     public void set_list(ArrayList<CheckBoxListSingle> list_set){this.checkbox_list=list_set;}
