@@ -35,8 +35,8 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
     private ArrayList<Thread> save_threads=new ArrayList<Thread>();
     private ArrayList<Thread> requestfocus_thread=new ArrayList<Thread>();
     private Boolean initial_bool=false;
-    private ViewHolder place_holder;
-    private int position_holder;
+    public volatile static boolean listview_change;
+    public volatile static int position_holder;
 
     public CustomListCheckBoxesListAdapter(Context context_main,ArrayList<CheckBoxListSingle> list_of_checkboxes){
         this.data_lists=list_of_checkboxes;
@@ -54,42 +54,14 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
         return data_lists.size();
     }
 
-    public void addList(int position,ViewHolder layout_save){
+    public void addList(int position){
         if(position==getCount()-1 && position!=0) {
             System.out.println("Function is "+String.valueOf(getCount()-1)+" "+ String.valueOf(position)+ new Exception().getStackTrace()[0]);
             this.data_lists.add(new CheckBoxListSingle(false, ""));
-            requestfocus_thread.add(new Thread(()->{
-                layout_save.edit_text.requestFocus();
-            }));
-            save_threads.add(new Thread(()->{
-                CheckBoxListSingle a=this.data_lists.get(position);
-                a.set_name(layout_save.edit_text.getText().toString());
-                a.set_state(layout_save.checkBox.isChecked());
-                this.data_lists.add(a);
-            }));
         } else if(position!=0 && position!=getCount()-1) {
-            System.out.println("Function is "+String.valueOf(getCount()-1)+" "+ String.valueOf(position)+ new Exception().getStackTrace()[0]);
-            this.data_lists.add(position+1,new CheckBoxListSingle(false,""));
-            requestfocus_thread.add(position+1,new Thread(()->{
-                layout_save.edit_text.requestFocus();
-            }));
-            save_threads.add(new Thread(()->{
-                CheckBoxListSingle a=this.data_lists.get(position);
-                a.set_name(layout_save.edit_text.getText().toString());
-                a.set_state(layout_save.checkBox.isChecked());
-                this.data_lists.add(position+1,a);
-            }));
+            System.out.println("Function is " + String.valueOf(getCount() - 1) + " " + String.valueOf(position) + new Exception().getStackTrace()[0]);
+            this.data_lists.add(position, new CheckBoxListSingle(false, ""));
         } else if(position==0){
-            System.out.println("Function is "+String.valueOf(getCount()-1)+" "+ String.valueOf(position)+ new Exception().getStackTrace()[0]);
-            requestfocus_thread.add(new Thread(()->{
-                layout_save.edit_text.requestFocus();
-            }));
-            save_threads.add(new Thread(()->{
-                CheckBoxListSingle a=this.data_lists.get(position);
-                a.set_name(layout_save.edit_text.getText().toString());
-                a.set_state(layout_save.checkBox.isChecked());
-                this.data_lists.add(position,a);
-            }));
             if(!initial_bool) {
                 this.data_lists.add(new CheckBoxListSingle(false, ""));
                 initial_bool = true;
@@ -101,8 +73,6 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
     public void deleteList(int position){
         this.data_lists.remove(position);
-        this.requestfocus_thread.remove(position);
-        this.save_threads.remove(position);
 
 }
     public ArrayList<CheckBoxListSingle> return_changed_list(){
@@ -146,24 +116,12 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
             layout_holder.input_layout = (TextInputLayout) view.findViewById(R.id.textInputLayoutInsideView);
             layout_holder.edit_text = (TextInputEditText) view.findViewById(R.id.customEditText);
 
-            layout_holder.edit_text.requestFocus();
-
             String list_text=this.data_lists.get(position).get_name();
             layout_holder.edit_text.setText(list_text);
 
             layout_holder.edit_text.setText(this.data_lists.get(position).get_name());
             layout_holder.edit_text.setFocusableInTouchMode(true);
             layout_holder.checkBox.setFocusableInTouchMode(true);
-
-            class CopyTextInputEditText{
-                public TextInputEditText a;
-                CopyTextInputEditText(TextInputEditText a){
-                    this.a=a;
-                }
-                public void requestFocus(){
-                    this.a.requestFocus();
-                }
-            }
 
             layout_holder.edit_text.setTag(position);
 
@@ -175,6 +133,8 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
                 layout_holder.edit_text.setPaintFlags(layout_holder.edit_text.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             }
 
+            
+
             TextWatcherModified modified=new TextWatcherModified(layout_holder,position) {
                 @Override
                 public void afterTextChanged(Editable editable) {
@@ -183,9 +143,11 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
                         if (editable.toString().endsWith("\n")&&editable.toString().length()>=1) {
                             System.out.println("Adding checkbox at position "+this.getPosition()+ new Exception().getStackTrace()[0]);
                             editable.delete(editable.length() - 1, editable.length());
-                            position_holder=this.getPosition();
-                            place_holder=this.get_layout_holder();
-                            addList(position_holder,place_holder);
+                            addList((Integer)this.get_layout_holder().edit_text.getTag()+1);
+                            position_holder=(Integer)this.get_layout_holder().edit_text.getTag()+1;
+                            listview_change=true;
+                            System.out.println("Int holder for view to be focused is "+position_holder);
+                            notifyDataSetChanged();
                         } else {
                             editable.replace(i, i+1, "");
                         }
@@ -195,16 +157,20 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
                 @Override
                 public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                     System.out.println("Integers are "+i+" "+i1+" "+i2+" ");
-                    if(i==0 && i1>0 && i2==0 && data_lists.size()>1) {
+                    if(i==0 && i1>0 && i2==0 && data_lists.size()>1 && !this.get_layout_holder().checkBox.isFocused()) {
                         System.out.println("Value of data list,request thread array and save threads in delete function is "+data_lists.size()+" "+requestfocus_thread.size()+" "+save_threads.size()+ new Exception().getStackTrace()[0]);
                         System.out.println("Position to be deleted is "+this.getPosition()+ new Exception().getStackTrace()[0]);
-                        deleteList(this.getPosition());
+                        deleteList((Integer)this.get_layout_holder().edit_text.getTag());
+                        position_holder=(Integer)this.get_layout_holder().edit_text.getTag()-1;
                         System.out.println("Position to be run is "+(this.getPosition()-1)+ new Exception().getStackTrace()[0]);
-                        requestfocus_thread.get(this.getPosition()-1).run();
+                        listview_change=true;
+                        notifyDataSetChanged();
                     }
-
                 }};
-
+            save_threads.add(new Thread(()->{
+                CheckBoxListSingle a=new CheckBoxListSingle(layout_holder.checkBox.isChecked(),layout_holder.edit_text.getText().toString());
+                this.data_lists.set(position,a);
+            }));
             try{
                 layout_holder.edit_text.removeTextChangedListener(modified);
                 layout_holder.edit_text.addTextChangedListener(modified);
@@ -241,7 +207,6 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
         // if text view has text, edit text is hidden
         // edit text should not phase out if the user has not entered anything and tried to skip
-        save_checkbox();
         return view;
     }
 
