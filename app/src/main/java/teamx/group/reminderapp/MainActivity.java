@@ -202,9 +202,4 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-    public interface transferBasicReminders{
-        public void transferBasicReminders(RemindersPresenter e);
-        public void transferBasicReminders(RemindersPresenter e,int position);
-    }
 }

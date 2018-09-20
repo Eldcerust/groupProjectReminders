@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Input your reminder Title here"
-            android:textSize="17sp" />
+            android:textSize="17sp"/>
     </android.support.design.widget.TextInputLayout>
 
     <TextView
@@ -67,19 +67,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="116dp"
+        android:layout_marginTop="12dp"
         android:text="Time:"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
 
     <TextView
         android:id="@+id/timeView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="12dp"
         android:onClick="show_time_picker"
         android:text="24:59"
         android:textSize="16sp"
@@ -91,7 +91,7 @@
         android:layout_width="56dp"
         android:layout_height="23dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:text="Notes:"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -101,10 +101,10 @@
     <ListView
         android:id="@+id/checkboxListView"
         android:layout_width="299dp"
-        android:layout_height="254dp"
+        android:layout_height="308dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="18dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:descendantFocusability="afterDescendants"
         android:focusable="false"
         app:layout_constraintEnd_toEndOf="parent"

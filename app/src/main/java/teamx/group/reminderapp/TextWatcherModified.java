@@ -4,28 +4,17 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 
 import java.util.ArrayList;
 
-public class TextWatcherModified implements TextWatcher {
+public abstract class TextWatcherModified implements TextWatcher,CustomListCheckBoxesListAdapter.transfer_position{
 
-    private CustomListCheckBoxesListAdapter.ViewHolder layout_holder;
+    private ViewGroup layout_holder;
     private Integer position;
-
-    public TextWatcherModified(CustomListCheckBoxesListAdapter.ViewHolder item, int position){
-        super();
-        this.layout_holder=item;
-        this.position=position;
-    }
-
-    public CustomListCheckBoxesListAdapter.ViewHolder get_layout_holder() {
-        return this.layout_holder;
-    }
-
-    public void set_layout_holder(CustomListCheckBoxesListAdapter.ViewHolder item){
-        this.layout_holder=item;
-    }
+    private Integer position_holder;
 
     public Integer getPosition() {
         return this.position;
@@ -51,5 +40,28 @@ public class TextWatcherModified implements TextWatcher {
     public void afterTextChanged(Editable editable)
     {
 
+    }
+
+    @Override
+    public void transfer_position(int position) {
+        this.position=position;
+    }
+
+    @Override
+    public void transfer_layoutholder(ViewGroup view_hold) {
+        this.layout_holder=view_hold;
+    }
+
+    @Override
+    public void transfer_static_position(int position) {
+        this.position_holder=position;
+    }
+
+    public Integer get_position_holder() {
+        return this.position_holder;
+    }
+
+    public ViewGroup getLayout_holder() {
+        return this.layout_holder;
     }
 }
