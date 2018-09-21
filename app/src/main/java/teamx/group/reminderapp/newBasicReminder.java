@@ -9,6 +9,8 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -34,8 +36,9 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     private Calendar current_date;
     private int edit_int;
     private String[] date_array;
-    public ListView list_view_basicreminders;
-    private CustomListCheckBoxesListAdapter list_adapter;
+    private RecyclerView r_view;
+    private RecyclerView.Adapter r_adapter;
+    private RecyclerView.LayoutManager r_layoutmanager;
 
     public RemindersModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
 
@@ -61,15 +64,18 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         this.edit_int=getIntent().getIntExtra("EDITMODE",-1);
 
         this.check_edit_status(edit_int);
-        list_view_basicreminders=(ListView)findViewById(R.id.checkboxListView);
+        this.r_view=(RecyclerView)findViewById(R.id.checkboxListView);
+        this.r_view.setHasFixedSize(true);
 
         setup_checkboxes();
     }
 
     public void setup_checkboxes(){
-        this.list_adapter=new CustomListCheckBoxesListAdapter(this,this.create_or_modify_reminder.get_checkbox_list());
-        this.list_adapter.set_array_checkbox(this.create_or_modify_reminder.get_checkbox_list());
-        this.list_view_basicreminders.setAdapter(list_adapter);
+        this.r_layoutmanager=new LinearLayoutManager(this);
+        this.r_view.setLayoutManager(this.r_layoutmanager);
+
+        this.r_adapter=new MyRecyclerViewAdapter(this,this.create_or_modify_reminder.get_checkbox_list());
+        this.r_view.setAdapter(this.r_adapter);
     }
 
     public void check_edit_status(int edit_int){
@@ -171,8 +177,8 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
             System.out.println(title_determined);
             this.create_or_modify_reminder.set_reminder_name(title_determined);
             this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
-            this.list_adapter.save_checkbox();
-            this.create_or_modify_reminder.set_list(this.list_adapter.return_changed_list());
+            //this.list_adapter.save_checkbox();
+           // this.create_or_modify_reminder.set_list(this.list_adapter.return_changed_list());
             String[] commandArray=new String[2];
             commandArray[0]="FetchReminderModel";
             return_to_main();
@@ -199,8 +205,8 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         if(title_determined.length()>0) {
             this.create_or_modify_reminder.set_reminder_name(title_determined);
             this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
-            this.list_adapter.save_checkbox();
-            this.create_or_modify_reminder.set_list(this.list_adapter.return_changed_list());
+            //this.list_adapter.save_checkbox();
+            //this.create_or_modify_reminder.set_list(this.list_adapter.return_changed_list());
             String[] commandArray=new String[2];
             commandArray[0]="FindAndReplace";
             commandArray[1]=String.valueOf(this.edit_int);

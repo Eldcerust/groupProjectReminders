@@ -14,6 +14,8 @@ package teamx.group.reminderapp;
         import android.widget.CheckBox;
         import android.widget.CompoundButton;
 
+        import org.w3c.dom.Text;
+
         import java.util.ArrayList;
 
 public class CustomListCheckBoxesListAdapter extends BaseAdapter{
@@ -81,7 +83,7 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
 
 
 
-    public void deleteList(int position,TextInputEditText edit_focus){
+    public void deleteList(int position){
         System.out.println("Deleting");
         System.out.println(position+" "+getCount()+" "+this.save_threads.size());
         try {
@@ -90,7 +92,6 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
             System.out.println("Error is on thread deletion,"+e.toString());
         }
         this.data_lists.remove(position);
-        edit_focus.addTextChangedListener((TextWatcherModified)edit_focus.getTag());
         System.out.println(position+" "+getCount()+" "+this.save_threads.size());
     }
     public ArrayList<CheckBoxListSingle> return_changed_list(){
@@ -231,9 +232,10 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
                     request_focus(this.getLayout_holder(),this.getPosition()-1);*/
 
                     System.out.println(this.getPosition()+" "+getCount()+" "+save_threads.size());
-                    deleteList(this.getPosition(),request_focus(list,this.getPosition()-1));
+                    deleteList(this.getPosition());
                     this.transfer_position(this.getPosition()-1);
                     layout_holder.edit_text.removeTextChangedListener(this);
+                    this.transfer_layoutholder(request_focus(this.getLayout_holder(),this.getPosition()));
                 } else if(i>0 & i1>0 & i2==0 & data_lists.size()>1 & layout_holder.checkBox.isFocused()) {
                     layout_holder.edit_text.requestFocus();
                     System.out.println("Edit text requested focus");
@@ -241,7 +243,10 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
             }
         };
         modified.transfer_position(position);
+        modified.transfer_layoutholder(list);
+
         layout_holder.edit_text.setTag(modified);
+        layout_holder.checkBox.setTag(list);
         layout_holder.edit_text.addTextChangedListener(modified);
             /*layout_holder.edit_text.setOnKeyListener(new View.OnKeyListener() {
                 @Override
@@ -278,12 +283,16 @@ public class CustomListCheckBoxesListAdapter extends BaseAdapter{
         return view;
     }
 
-    public TextInputEditText request_focus(ViewGroup vgroup, int child_position){
+    public ViewGroup request_focus(ViewGroup vgroup, int child_position){
         View v=vgroup.getChildAt(child_position);
         TextInputEditText edit=(TextInputEditText)v.findViewById(R.id.customEditText);
+        ViewGroup second_view=(ViewGroup)v.findViewById(R.id.checkBoxOfView).getTag();
         edit.setFocusableInTouchMode(true);
         edit.requestFocus();
-        return edit;
+        TextWatcherModified text_watcher=(TextWatcherModified)edit.getTag();
+        text_watcher.transfer_position(child_position);
+        edit.addTextChangedListener(text_watcher);
+        return second_view;
     }
 
     static class ViewHolder{

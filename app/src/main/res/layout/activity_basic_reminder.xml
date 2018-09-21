@@ -98,7 +98,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/checkboxListView"
         android:layout_width="299dp"
         android:layout_height="308dp"
