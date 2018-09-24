@@ -4,7 +4,6 @@ import android.app.AlarmManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,15 +16,13 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,ReminderView{
+        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,ListDialogFragmentReminderCreation.OnDialogDismissListener{
 
     // this is unfortunately not the first activity, despite being the most important activity
     private VoiceProfilePresenter profiles_voice;
     private RemindersPresenter reminders_present;
+    private RecurringReminderPresenter recurringReminderPresenter;
     private ListView list_view;
     private CustomListAdapter list_adapter;
     private AlarmManager alarm_mgr;
@@ -34,6 +31,7 @@ public class MainActivity extends AppCompatActivity
     public static RemindersModel reminder_transmission_holder;
     public static RecurringRemindersModel recurringRemindersModel_transmission_holder;
     public static int reminder_position;
+    public static int reminder_creation_type;
 
 
     @Override
@@ -120,19 +118,42 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int request_code,int result_code,Intent data_received){
         if(request_code==2){
             if(result_code==RESULT_OK){
+                String type="";
                 if(data_received.getStringArrayExtra("State")[0].equals("FetchReminderModel")){
                     RemindersModel a=reminder_transmission_holder;
                     reminder_transmission_holder=null;
                     this.reminders_present.insert_reminder(a);
+                    type="BasicReminder";
                 }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
                     RemindersModel a=reminder_transmission_holder;
                     reminder_transmission_holder=null;
                     this.reminders_present.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    type="BasicReminder";
                 }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
                     this.reminders_present.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    type="BasicReminder";
+                } else if(data_received.getStringArrayExtra("State")[0].equals("FetchRecurringReminderModel")){
+                    RecurringRemindersModel a=recurringRemindersModel_transmission_holder;
+                    recurringRemindersModel_transmission_holder=null;
+                    this.recurringReminderPresenter.insert_reminder(a);
+                    type="RecurringReminderModel";
+                }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
+                    RecurringRemindersModel a=recurringRemindersModel_transmission_holder;
+                    recurringRemindersModel_transmission_holder=null;
+                    this.recurringReminderPresenter.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    type="RecurringReminderModel";
+                }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
+                    this.recurringReminderPresenter.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    type="RecurringReminderModel";
                 }
-                this.reminders_present.save_reminders_sql(this.reminders_present.reminder_list);
-                this.list_adapter.set_data_refresh();
+
+                if(type.equals("BasicReminder")) {
+                    this.reminders_present.save_reminders_sql(this.reminders_present.reminder_list);
+                    this.list_adapter.set_data_refresh();
+                } else if(type.equals("RecurringReminderModel")){
+                    this.recurringReminderPresenter.save_reminders_sql(this.recurringReminderPresenter.reminder_list);
+                    this.list_adapter.set_data_refresh();
+                }
                 //create function on reminderpresenter to edit sql
             }
         }
@@ -202,5 +223,27 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onDialogDismissListener(int position) {
+        Intent intent_fab;
+        switch(position){
+            case 0:
+                intent_fab=new Intent(MainActivity.this,newBasicReminder.class);
+                intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
+                startActivityForResult(intent_fab,2);
+                break;
+            case 1:
+                intent_fab=new Intent(MainActivity.this,newRecurringReminder.class);
+                intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
+                startActivityForResult(intent_fab,2);
+                break;
+            case 2:
+                //intent_fab=new Intent(MainActivity.this,newTimeBoxReminder.class);
+                //intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
+                //startActivityForResult(intent_fab,2);
+                //break;
+        }
     }
 }

@@ -9,12 +9,12 @@ import android.support.v4.app.DialogFragment;
 import android.util.Log;
 
 
-public class ListDialogFragment extends DialogFragment {
+public class ListDialogFragmentReminderCreation extends DialogFragment {
     OnDialogDismissListener callingBack;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        String[] arrayThing={"1 minute","3 minutes","5 minutes","10 minutes","15 minutes","30 minutes","1 hour"};
+        String[] arrayThing={"Basic Reminders","Recurring Reminders","TimeBox reminders"};
         //reformat this part later to accept default preferences set by the user
         // through a special user part setting
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
