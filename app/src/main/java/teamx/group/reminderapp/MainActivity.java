@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity
     private VoiceProfilePresenter voice_access;
     private newBasicReminder temporary_class_container_basic_reminder_creation;
     public static RemindersModel reminder_transmission_holder;
+    public static RecurringRemindersModel recurringRemindersModel_transmission_holder;
     public static int reminder_position;
 
 

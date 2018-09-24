@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:windowSoftInputMode="adjustResize"
+    tools:context=".RecurringReminderActivity">
+
+    <CheckBox
+        android:id="@+id/checkBoxSunday"
+        android:layout_width="41dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="12dp"
+        android:text="S"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxSaturday"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <CheckBox
+        android:id="@+id/checkBoxSaturday"
+        android:layout_width="41dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="12dp"
+        android:text="S"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxFriday"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <CheckBox
+        android:id="@+id/checkBoxFriday"
+        android:layout_width="38dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="12dp"
+        android:text="F"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxThursday"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <CheckBox
+        android:id="@+id/checkBoxThursday"
+        android:layout_width="41dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="12dp"
+        android:text="T"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxWednesday"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <TextView
+        android:id="@+id/recurringView"
+        android:layout_width="44dp"
+        android:layout_height="23dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:text="Days:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <TextView
+        android:id="@+id/titleView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="14dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="40dp"
+        android:text="Title:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/textInputLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/textInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginTop="17dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/titleView"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.design.widget.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Input your reminder Title here"
+            android:textSize="17sp" />
+    </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:id="@+id/dateTitleView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:text="Date:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleView" />
+
+    <TextView
+        android:id="@+id/dateView"
+        android:layout_width="155dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="15dp"
+        android:onClick="show_date_picker"
+        android:text="30/12/2999 Saturday"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/dateTitleView"
+        app:layout_constraintTop_toBottomOf="@+id/titleView" />
+
+    <TextView
+        android:id="@+id/timeTitleView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:text="Time:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/dateView"
+        app:layout_constraintTop_toBottomOf="@+id/titleView" />
+
+    <TextView
+        android:id="@+id/timeView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="14dp"
+        android:onClick="show_time_picker"
+        android:text="24:59"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/timeTitleView"
+        app:layout_constraintTop_toBottomOf="@+id/titleView" />
+
+    <TextView
+        android:id="@+id/notesTitleView"
+        android:layout_width="56dp"
+        android:layout_height="23dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:text="Notes:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recurringView" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/checkboxListView"
+        android:layout_width="299dp"
+        android:layout_height="308dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="12dp"
+        android:descendantFocusability="afterDescendants"
+        android:focusable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/titleView"
+        app:layout_constraintTop_toBottomOf="@+id/recurringView" />
+
+    <Button
+        android:id="@+id/delete_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:onClick="delete_button_onclick"
+        android:text="Delete"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/create_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="56dp"
+        android:onClick="create_button_onclick"
+        android:text="Create"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/edit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="56dp"
+        android:onClick="edit_button_onclick"
+        android:text="Edit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <CheckBox
+        android:id="@+id/checkBoxTuesday"
+        android:layout_width="40dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="12dp"
+        android:text="T"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxMonday"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <CheckBox
+        android:id="@+id/checkBoxWednesday"
+        android:layout_width="41dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="12dp"
+        android:text="W"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxTuesday"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+    <CheckBox
+        android:id="@+id/checkBoxMonday"
+        android:layout_width="42dp"
+        android:layout_height="23dp"
+        android:layout_marginStart="9dp"
+        android:layout_marginTop="12dp"
+        android:text="M"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/recurringView"
+        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+
+
+</android.support.constraint.ConstraintLayout>

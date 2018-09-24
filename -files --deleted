@@ -1,0 +1,55 @@
+[33mcommit 5447ee7de0a8a2f2258391eba70e05f1c00a2ee8[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Alvin Thio <alvinthiozhang@gmail.com>
+Date:   Thu Sep 20 23:18:46 2018 +0800
+
+    Fixed interaction with adding, need to fix deletion
+
+ delete mode 100644 app/src/main/java/teamx/group/reminderapp/ThreadReturn.java
+
+[33mcommit 7fe27c86cafd6d61c0d22bc1329499f1eee439c0[m
+Author: Alvin Thio <alvinthiozhang@gmail.com>
+Date:   Wed Sep 12 20:49:33 2018 +0800
+
+    Finished launcher redirecting. Fix launching newBasicReminders
+
+ delete mode 100644 app/src/main/java/teamx/group/reminderapp/AlarmReceive.java
+
+[33mcommit c093a2d61d019c63de49b1511e3b83e291f9ddb7[m
+Author: eldcerust <alvinthiozhang@gmail.com>
+Date:   Mon Sep 10 20:32:43 2018 +0800
+
+    Need to find a way to reliably push and pull remindermodels
+
+ delete mode 100644 app/src/main/java/teamx/group/reminderapp/BasicReminderActivity.java
+
+[33mcommit 84aedaec7ae2d382c60c97363f65c3ad10eba9d9[m
+Author: eldcerust <alvinthiozhang@gmail.com>
+Date:   Fri Sep 7 18:12:11 2018 +0800
+
+    No progress, just swapping files
+
+ delete mode 100644 app/src/main/java/teamx/group/reminderapp/TextWatcherLocal.java
+
+[33mcommit 59d3d726e8fd635fa217ecd03b64e6f8788a6212[m
+Author: eldcerust <alvinthiozhang@gmail.com>
+Date:   Mon Sep 3 15:52:05 2018 +0800
+
+    Finished fixing color saving and loading as well as file path storing method
+
+ delete mode 100644 app/src/main/res/raw/reminders.png
+
+[33mcommit d9a73da545ba9dfa25ab1c679546d88b55620451[m
+Author: eldcerust <alvinthiozhang@gmail.com>
+Date:   Thu Aug 30 15:19:40 2018 +0800
+
+    Uploading the feature list
+
+ delete mode 100644 app/src/main/res/raw/aperture.png
+
+[33mcommit 5248670c3052686f43bcaa7b2fa0dd09026c7df3[m
+Author: Alvin Thio <alvinthiozhang@gmail.com>
+Date:   Wed Aug 15 17:01:08 2018 +0800
+
+    Initial creation of remindersmodel and presenter, middle of doing alarmreceiver model. Class may not be available at UML and may require revision of the class diagram later.
+
+ delete mode 100644 .idea/.name
