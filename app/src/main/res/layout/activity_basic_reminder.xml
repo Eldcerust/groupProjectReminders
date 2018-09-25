@@ -98,20 +98,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
-    <ListView
-        android:id="@+id/checkboxListView"
-        android:layout_width="299dp"
-        android:layout_height="308dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="12dp"
-        android:descendantFocusability="afterDescendants"
-        android:focusable="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/titleView"
-        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
-
     <Button
         android:id="@+id/delete_button"
         android:layout_width="wrap_content"
@@ -141,6 +127,15 @@
         android:text="Edit"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/checkboxListView"
+        android:layout_width="296dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintStart_toEndOf="@+id/notesTitleView"
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
 
 </android.support.constraint.ConstraintLayout>

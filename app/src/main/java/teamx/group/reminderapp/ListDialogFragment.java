@@ -14,11 +14,11 @@ public class ListDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        String[] arrayThing={"1 minute","3 minutes","5 minutes","10 minutes","15 minutes","30 minutes","1 hour"};
+        String[] arrayThing={"Basic Reminder","Repeating reminder","TimeBox Reminder"};
         //reformat this part later to accept default preferences set by the user
         // through a special user part setting
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Please select snooze duration.")
+        builder.setTitle("Please select what reminder you want to create.")
                 .setItems(arrayThing, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int position) {

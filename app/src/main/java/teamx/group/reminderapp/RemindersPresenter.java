@@ -349,6 +349,12 @@ public class RemindersPresenter{
         //move this code in to other place/presenter s
     }
 
+    public ArrayList<RemindersModel> sort_reminders(ArrayList<RemindersModel> list){
+        this.quick_sort_helper(list,0,list.size()-1);
+        //move this code in to other place/presenter s
+        return list;
+    }
+
     private void quick_sort_helper(ArrayList<RemindersModel> reminder_list,int left_index,int right_index){
         if(left_index<right_index){
             int split_point=this.quick_sort_partition(reminder_list,left_index,right_index);

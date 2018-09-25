@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/groupProject.iml" filepath="$PROJECT_DIR$/groupProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/groupProjectReminders.iml" filepath="$PROJECT_DIR$/groupProjectReminders.iml" />
     </modules>
   </component>

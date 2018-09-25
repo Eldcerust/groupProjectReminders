@@ -17,6 +17,20 @@ public class RecurringRemindersModel extends RemindersModel{
         this.micro_reminders=micro_reminders;
     }
 
+    public RecurringRemindersModel(String name,Calendar reminder_date_time,ArrayList<CheckBoxListSingle> a){
+        super(name,reminder_date_time,a);
+        this.number_of_repetition=0;
+        this.days_of_repetition=0;
+        this.micro_reminders=false;
+    }
+
+    public RecurringRemindersModel(String name,Calendar reminder_date_time){
+        super(name,reminder_date_time);
+        this.number_of_repetition=0;
+        this.days_of_repetition=0;
+        this.micro_reminders=false;
+    }
+
     public int get_days_of_repetition(){return this.days_of_repetition;}
 
     public int get_number_of_repetition(){return this.number_of_repetition;}

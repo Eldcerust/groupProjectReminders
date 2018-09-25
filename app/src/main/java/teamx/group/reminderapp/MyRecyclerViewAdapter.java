@@ -22,7 +22,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private ArrayList<CheckBoxListSingle> data_lists;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    private RecyclerView mRecyclerView;
+    protected RecyclerView mRecyclerView;
     private volatile boolean status_add=false;
     private volatile boolean save_state=false;
 
@@ -111,6 +111,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         };
         holder.editText.setFocusableInTouchMode(true);
         holder.editText.setOnFocusChangeListener(holder.onFocusChangeListener);
+        holder.editText.requestFocus();
     }
 
     // total number of rows
@@ -131,13 +132,14 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
         mRecyclerView.post(new Runnable() {
             @Override public void run() {
-                notifyItemRangeChanged(position,getItemCount());
+                notifyItemInserted(position);
+                notifyItemRangeChanged(position,temp.size());
                 mRecyclerView.getViewTreeObserver()
                         .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
                                 setStatus_add(false);
-                                mRecyclerView.getChildAt(position).requestFocus();
+                                mRecyclerView.getChildAt(position).findViewById(R.id.customEditText).requestFocus();
                                 mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                             }
                         });
@@ -155,7 +157,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             setStatus_add(true);}
         mRecyclerView.post(new Runnable() {
             @Override public void run() {
-                notifyItemRangeChanged(position,getItemCount());
+                notifyItemRangeChanged(position,temp.size());
                 mRecyclerView.getViewTreeObserver()
                         .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
