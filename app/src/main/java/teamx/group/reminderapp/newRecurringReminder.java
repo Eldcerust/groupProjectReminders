@@ -96,7 +96,7 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
                     if(isChecked){
                         days.add(dayPosition);
                     } else {
-                        days.removeIf(i->i==dayPosition);
+                        days=removeInteger(days,dayPosition);
                     }
                 }
             });
@@ -127,7 +127,7 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             ArrayList<CheckBoxListSingle> checkbox_initialize=new ArrayList<CheckBoxListSingle>();
             checkbox_initialize.add(new CheckBoxListSingle(false,""));
 
-            this.create_or_modify_reminder=new RecurringRemindersModel("",Calendar.getInstance(),null,checkbox_initialize,0,0,false);
+            this.create_or_modify_reminder=new RecurringRemindersModel("",Calendar.getInstance(),checkbox_initialize);
 
             this.current_date=create_or_modify_reminder.get_reminder_date_time();
             this.set_calendar_text(this.current_date);
@@ -142,6 +142,10 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             this.create_button.setVisibility(View.INVISIBLE);
             this.edit_button.setVisibility(View.VISIBLE);
             this.delete_button.setVisibility(View.VISIBLE);
+
+
+            this.create_or_modify_reminder=MainActivity.recurringRemindersModel_transmission_holder;
+            this.edit_int=MainActivity.reminder_position;
 
             int number=this.create_or_modify_reminder.get_days_of_repetition();
             this.days=getDigits(number);
@@ -176,8 +180,6 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             }
 
             setDays();
-            this.create_or_modify_reminder=MainActivity.recurringRemindersModel_transmission_holder;
-            this.edit_int=MainActivity.reminder_position;
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
             this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
         }
@@ -240,14 +242,35 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
         this.current_date.set(Calendar.MINUTE,i1);
         set_calendar_text(this.current_date);
     }
+
+
     public int returnDaysSaveable(){
         String daysjoined="";
-        this.days.removeIf(i->i==0);
-        for(int i=0;i<this.days.size();i++){
-            daysjoined=daysjoined+String.valueOf(this.days.get(i));
-            this.days.remove(i);
+        List<Integer> temp_list;
+        if(this.days.size()>1){
+            temp_list=removeInteger(this.days,0);
+        } else if(this.days.size()==0) {
+            temp_list=new ArrayList<Integer>();
+            temp_list.add(0);
+        }else {
+            temp_list=this.days;
+        }
+        for(int i=0;i<temp_list.size();i++){
+            daysjoined=daysjoined.concat(String.valueOf(temp_list.get(i)));
+            temp_list.remove(i);
         }
         return (Integer.valueOf(daysjoined));
+    }
+
+    public List<Integer> removeInteger(List<Integer> list,int value){
+        List<Integer> temp=list;
+        try {
+            int indexValue=temp.indexOf(value);
+            temp.remove(indexValue);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return temp;
     }
 
     public void create_button_onclick_recurring(View v){
@@ -300,8 +323,8 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
     }
 
     public void return_to_main(){
-        MainActivity.reminder_transmission_holder=null;
-        MainActivity.reminder_transmission_holder=this.create_or_modify_reminder;
+        MainActivity.recurringRemindersModel_transmission_holder=null;
+        MainActivity.recurringRemindersModel_transmission_holder=this.create_or_modify_reminder;
         MainActivity.reminder_position=this.edit_int;
     }
 }

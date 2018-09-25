@@ -71,13 +71,14 @@ public class CustomListAdapter extends BaseAdapter{
         return convert_view;
     }
 
-    public void set_data_refresh(){
+    public void set_data_refresh(ArrayList<RemindersModel> a){
+        this.reminder_lists=a;
         notifyDataSetChanged();
     }
 
     static class ViewHolder{
-        TextView name_view;
-        TextView time_view;
-        TextView type_view;
+        private TextView name_view;
+        private TextView time_view;
+        private TextView type_view;
     }
 }

@@ -86,12 +86,12 @@ public class RecurringRemindersModel extends RemindersModel{
 
     public int get_number_of_repetition(){return this.number_of_repetition;}
 
-    public void set_days_of_repetition(int days_repeated_required){this.days_of_repetition=number_of_repetition;}
+    public void set_days_of_repetition(int days_repeated_required){this.days_of_repetition=days_repeated_required;}
 
     public void set_numbers_of_repetition(int numbers_repeated){this.number_of_repetition=numbers_repeated;}
 
     @Override
-    public String return_type(){return "RecurringReminders";}
+    public String return_type(){return "Recurring Reminders";}
 }
 
 

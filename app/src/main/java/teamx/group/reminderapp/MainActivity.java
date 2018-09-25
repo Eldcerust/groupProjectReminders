@@ -31,10 +31,11 @@ public class MainActivity extends AppCompatActivity
     private AlarmManager alarm_mgr;
     private VoiceProfilePresenter voice_access;
     private newBasicReminder temporary_class_container_basic_reminder_creation;
-    public static RemindersModel reminder_transmission_holder;
-    public static RecurringRemindersModel recurringRemindersModel_transmission_holder;
+    public static RemindersModel reminder_transmission_holder,reminder_transmission_holder_original;
+    public static RecurringRemindersModel recurringRemindersModel_transmission_holder,recurringRemindersModel_transmission_holder_original;
     public static int reminder_position;
     public static int reminder_creation_type;
+    public static ArrayList<RemindersModel> display_list;
 
 
     @Override
@@ -101,19 +102,23 @@ public class MainActivity extends AppCompatActivity
         this.profiles_voice.load_sql_voice_profiles();
     }
 
-    public void set_list_on_display() {
-        ArrayList<RemindersModel> joined_reminders=this.reminders_present.get_reminder_list();
-        ArrayList<RecurringRemindersModel> joined_reminders_recurring=this.recurringReminderPresenter.get_reminder_list();
-        for(int a=0;a<joined_reminders_recurring.size();a++){
-            int finalA = a;
-            new Thread(()->{
-                joined_reminders.add((RemindersModel)joined_reminders_recurring.get(finalA));
-            }).run();
+    public void addReminders(RemindersModel a,ArrayList<RemindersModel> b){
+        b.add(a);
+    }
+
+    public void initialize_display(){
+        display_list=null;
+        display_list=this.reminders_present.get_reminder_list();
+        for(int a=0;a<this.recurringReminderPresenter.get_reminder_list().size();a++){
+            display_list.add((RemindersModel)this.recurringReminderPresenter.get_reminder_list().get(a));
         }
 
-        this.reminders_present.sort_reminders(joined_reminders);
+        display_list=this.reminders_present.sort_reminders(display_list);
+    }
 
-        this.list_adapter=new CustomListAdapter(this,reminders_present.get_reminder_list());
+    public void set_list_on_display() {
+        initialize_display();
+        this.list_adapter=new CustomListAdapter(this,display_list);
         list_view.setAdapter(this.list_adapter);
         list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -129,9 +134,16 @@ public class MainActivity extends AppCompatActivity
                     Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminder.class);
                     reminder_edit_intent.putExtra("EDITMODE",position);
                     reminder_position=position;
+                    reminder_transmission_holder_original=reminder_transmission_holder;
                     startActivityForResult(reminder_edit_intent,2);
                 }else if(reminder_transmission_holder.return_type().equals("Recurring Reminders")){
-
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,newRecurringReminder.class);
+                    reminder_edit_intent.putExtra("EDITMODE",position);
+                    reminder_position=position;
+                    recurringRemindersModel_transmission_holder=(RecurringRemindersModel)reminder_transmission_holder;
+                    recurringRemindersModel_transmission_holder_original=(RecurringRemindersModel)reminder_transmission_holder;
+                    reminder_transmission_holder=null;
+                    startActivityForResult(reminder_edit_intent,2);
                 }else if(reminder_transmission_holder.return_type().equals("Time Boxed Reminders")) {
 
                 }
@@ -147,37 +159,47 @@ public class MainActivity extends AppCompatActivity
                 if(data_received.getStringArrayExtra("State")[0].equals("FetchReminderModel")){
                     RemindersModel a=reminder_transmission_holder;
                     reminder_transmission_holder=null;
+                    reminder_transmission_holder_original=null;
                     this.reminders_present.insert_reminder(a);
                     type="BasicReminder";
                 }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
                     RemindersModel a=reminder_transmission_holder;
+                    RemindersModel b=reminder_transmission_holder_original;
                     reminder_transmission_holder=null;
-                    this.reminders_present.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    reminder_transmission_holder_original=null;
+                    this.reminders_present.change_reminder_similar_object(b,a);
                     type="BasicReminder";
                 }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
-                    this.reminders_present.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    this.reminders_present.delete_reminder(reminder_transmission_holder_original);
+                    reminder_transmission_holder=null;
+                    reminder_transmission_holder_original=null;
                     type="BasicReminder";
                 } else if(data_received.getStringArrayExtra("State")[0].equals("FetchRecurringReminderModel")){
                     RecurringRemindersModel a=recurringRemindersModel_transmission_holder;
                     recurringRemindersModel_transmission_holder=null;
+                    recurringRemindersModel_transmission_holder_original=null;
                     this.recurringReminderPresenter.insert_reminder(a);
                     type="RecurringReminderModel";
-                }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplace")){
+                }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplaceRecurringReminder")){
                     RecurringRemindersModel a=recurringRemindersModel_transmission_holder;
+                    RecurringRemindersModel b=recurringRemindersModel_transmission_holder_original;
                     recurringRemindersModel_transmission_holder=null;
-                    this.recurringReminderPresenter.change_reminder_position_wremindermodel(a,Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                    recurringRemindersModel_transmission_holder_original=null;
+                    this.recurringReminderPresenter.change_reminder_similar_object(b,a);
                     type="RecurringReminderModel";
-                }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThis")){
-                    this.recurringReminderPresenter.delete_reminder_position(Integer.valueOf(data_received.getStringArrayExtra("State")[1]));
+                }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThisRecurringReminder")){
+                    this.recurringReminderPresenter.delete_object_reminderModel(recurringRemindersModel_transmission_holder_original);
+                    recurringRemindersModel_transmission_holder=null;
+                    recurringRemindersModel_transmission_holder_original=null;
                     type="RecurringReminderModel";
                 }
 
                 if(type.equals("BasicReminder")) {
                     this.reminders_present.save_reminders_sql(this.reminders_present.reminder_list);
-                    this.list_adapter.set_data_refresh();
+                    this.list_adapter.set_data_refresh(display_list);
                 } else if(type.equals("RecurringReminderModel")){
                     this.recurringReminderPresenter.save_reminders_sql(this.recurringReminderPresenter.reminder_list);
-                    this.list_adapter.set_data_refresh();
+                    this.list_adapter.set_data_refresh(display_list);
                 }
                 //create function on reminderpresenter to edit sql
             }

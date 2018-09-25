@@ -16,6 +16,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.os.Build;
 import android.util.Log;
 
 public class RemindersPresenter{
@@ -50,6 +51,10 @@ public class RemindersPresenter{
         ArrayList<CheckBoxListSingle> check_box_return=new ArrayList<CheckBoxListSingle>();
         check_box_return.add(new CheckBoxListSingle(false,""));
         return check_box_return;
+    }
+
+    public void delete_object_reminderModel(RemindersModel a){
+        this.reminder_list.remove(a);
     }
 
     public void insert_reminder(RemindersModel a){
@@ -134,7 +139,7 @@ public class RemindersPresenter{
                 date_time.set(Calendar.MILLISECOND, 0);
 
                 //insert checkboxlistsingle here to sql database
-                UUID reminder_UUID=UUID.fromString(String.join("-",c.getString(uuid_reminder_index).split("_")));
+                UUID reminder_UUID=UUID.fromString(combine(c.getString(uuid_reminder_index).split("_"),"-"));
 
                 String voice_profile_str=c.getString(voice_profile_index);
                 add_thread(threads_load_checklist,reminder_UUID,count);
@@ -144,7 +149,8 @@ public class RemindersPresenter{
                     place_holder.set_reminder_UUID(reminder_UUID);
                     reminders_list_for_save.add(place_holder);
                 } else {
-                    UUID uuid_of_profile = UUID.fromString(String.join("-",c.getString(voice_profile_index).split("_")));
+                    //UUID uuid_of_profile = UUID.fromString(String.join("-",c.getString(voice_profile_index).split("_")));
+                    UUID uuid_of_profile = UUID.fromString(combine(c.getString(voice_profile_index).split("_"),"-"));
                     VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
                     RemindersModel place_holder=new RemindersModel(reminder_name,date_time);
                     place_holder.set_reminder_voice_profile(voice_profile);
@@ -182,6 +188,10 @@ public class RemindersPresenter{
         }
 
         return(reminders_list_for_save);
+    }
+
+    public void change_reminder_similar_object(RemindersModel original,RemindersModel modified){
+        this.reminder_list.set(this.reminder_list.indexOf(original),modified);
     }
 
     public ArrayList<Thread> add_thread(ArrayList<Thread> thread_master,UUID uuid_reminders,int position){
@@ -226,7 +236,7 @@ public class RemindersPresenter{
     }
 
     public void save_reminder_checkbox_sql(ArrayList<CheckBoxListSingle> checkbox_lists,UUID uuid){
-        String uuid_of_reminder=String.join("_",uuid.toString().split("-"));
+        String uuid_of_reminder=combine(uuid.toString().split("-"),"_");
 
         SQLiteDatabase save_database=this.from_main.openOrCreateDatabase("CheckBoxReminders",Context.MODE_PRIVATE,null);
         Cursor cursor = save_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
@@ -258,10 +268,22 @@ public class RemindersPresenter{
         //fuse the alarm mgr model?
     }
 
+    public String combine(String[] arrayString, String pattern) {
+        String combined = "";
+        for (int a = 0; a < arrayString.length; a++) {
+            if (a != arrayString.length - 1){
+                combined = combined.concat(arrayString[a]).concat(pattern);
+            } else{
+            combined=combined.concat(arrayString[a]);
+            }
+        }
+        return combined;
+    }
+
     public ArrayList<CheckBoxListSingle> load_from_sql_with_uuid_ver(UUID uuid_from_reminders){
         //load sql based on UUID, store based on UUID
         SQLiteDatabase checkbox_database;
-        String uuid_string=String.join("_",uuid_from_reminders.toString().split("-"));
+        String uuid_string=combine(uuid_from_reminders.toString().split("-"),"_");
         ArrayList<CheckBoxListSingle> onereminder_list=new ArrayList<CheckBoxListSingle>();
         Cursor c;
         try {
@@ -306,7 +328,11 @@ public class RemindersPresenter{
         // put code here to process multiple amount of reminders at the same time
         PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-        alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+        } else {
+            alarm_manager.set(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+        }
         // put reminders name and time for the reminder
         // how to snooze reminders?
 

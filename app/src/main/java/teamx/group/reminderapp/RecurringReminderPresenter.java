@@ -16,6 +16,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.os.Build;
 import android.util.Log;
 
 public class RecurringReminderPresenter {
@@ -75,6 +76,14 @@ public class RecurringReminderPresenter {
         sort_reminders();;
     }
 
+    public void change_reminder_similar_object(RecurringRemindersModel original,RecurringRemindersModel modified){
+        this.reminder_list.set(this.reminder_list.indexOf(original),modified);
+    }
+
+    public void delete_object_reminderModel(RecurringRemindersModel a){
+        this.reminder_list.remove(a);
+    }
+
     public void delete_reminder(RecurringRemindersModel non_modified){
         UUID non_modified_uuid=non_modified.get_reminder_UUID();
         for(int a=0;a<this.reminder_list.size();a++){
@@ -98,6 +107,18 @@ public class RecurringReminderPresenter {
 
     public RemindersModel get_reminder(Integer position_of_reminder){
         return(this.reminder_list.get(position_of_reminder));
+    }
+
+    public String combine(String[] arrayString, String pattern){
+        String combined = "";
+        for (int a = 0; a < arrayString.length; a++) {
+            if (a != arrayString.length - 1){
+                combined = combined.concat(arrayString[a]).concat(pattern);
+            } else{
+                combined=combined.concat(arrayString[a]);
+            }
+        }
+        return combined;
     }
 
     public ArrayList<RecurringRemindersModel> load_reminders_from_sql () {
@@ -137,17 +158,22 @@ public class RecurringReminderPresenter {
                 int weekRepetition=Integer.valueOf(c.getString(week_repetition_index));
 
                 //insert checkboxlistsingle here to sql database
-                UUID reminder_UUID=UUID.fromString(String.join("-",c.getString(uuid_reminder_index).split("_")));
+                //UUID reminder_UUID=UUID.fromString(String.join("-",c.getString(uuid_reminder_index).split("_")));
+                UUID reminder_UUID=UUID.fromString(combine(c.getString(uuid_reminder_index).split("_"),"-"));
+
 
                 String voice_profile_str=c.getString(voice_profile_index);
                 add_thread(threads_load_checklist,reminder_UUID,count);
 
                 if(voice_profile_str.equals("null")){
                     RecurringRemindersModel place_holder=new RecurringRemindersModel(reminder_name,date_time);
+                    place_holder.set_days_of_repetition(dayRepetition);
+                    place_holder.set_numbers_of_repetition(weekRepetition);
                     place_holder.set_reminder_UUID(reminder_UUID);
                     reminders_list_for_save.add(place_holder);
                 } else {
-                    UUID uuid_of_profile = UUID.fromString(String.join("-",c.getString(voice_profile_index).split("_")));
+                    //UUID uuid_of_profile = UUID.fromString(String.join("-",c.getString(voice_profile_index).split("_")));
+                    UUID uuid_of_profile=UUID.fromString(combine(c.getString(voice_profile_index).split("_"),"-"));
                     VoiceProfileModel voice_profile=this.presenter_for_presets.search_profile(uuid_of_profile);
                     RecurringRemindersModel place_holder=new RecurringRemindersModel(reminder_name,date_time);
                     place_holder.set_reminder_voice_profile(voice_profile);
@@ -173,7 +199,7 @@ public class RecurringReminderPresenter {
                 }
             }
         } catch (Exception e){
-            Log.i("Something wrong with sql loading in:","Recurring Reminder");
+            Log.i("Wrong sql loading in:","Recurring Reminder");
             if(reminders_list_for_save!=null && reminders_list_for_save.size()>0){
                 return(reminders_list_for_save);
             } else if(reminders_list_for_save==null || reminders_list_for_save.size()==0){
@@ -208,7 +234,7 @@ public class RecurringReminderPresenter {
             // or just nuke the entire database and make a new one?
             my_database.execSQL("DROP TABLE RecurringReminders");
         }
-        my_database.execSQL("CREATE TABLE IF NOT EXISTS RecurringReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR,UUID VARCHAR,dayRepetition INT,weekRepetition INT)");
+        my_database.execSQL("CREATE TABLE IF NOT EXISTS RecurringReminders(title VARCHAR,hour INTEGER,minute INTEGER,year INTEGER,month INTEGER,day INTEGER,voiceProfile VARCHAR,UUID VARCHAR,dayRepetition INTEGER,weekRepetition INTEGER)");
         // no need for creating if does not exist, so, just for the sake if there is an empty table, somehow???
         for (int i = 0; i < reminders_lists.size(); i++) {
             RecurringRemindersModel reminder_model=reminders_lists.get(i);
@@ -220,9 +246,10 @@ public class RecurringReminderPresenter {
                 save_reminder_checkbox_sql(reminder_model.get_checkbox_list(),reminder_model.get_reminder_UUID());
             } catch (NullPointerException e) {
                 if(e.toString().equals("java.lang.NullPointerException: Attempt to invoke virtual method 'java.util.UUID teamx.group.reminderapp.VoiceProfileModel.get_name()' on a null object reference")){
-                    System.out.println("INSERT INTO BasicReminders(title,hour,minute,year,month,day,voiceProfile,UUID) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + "null" + "\',\'" + reminders_lists.get(i).get_reminder_UUID().toString() + "\')");
                     save_reminder_checkbox_sql(reminders_lists.get(i).get_checkbox_list(), reminders_lists.get(i).get_reminder_UUID());
                     my_database.execSQL("INSERT INTO RecurringReminders(title,hour,minute,year,month,day,voiceProfile,UUID,dayRepetition,weekRepetition) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + "null" + "\',\'" + reminders_lists.get(i).get_reminder_UUID().toString() +"\',\'" +String.valueOf(dayRepetition)+ "\',\'" +String.valueOf(weekRepetition)+ "\')");
+                    System.out.println("INSERT INTO RecurringReminders(title,hour,minute,year,month,day,voiceProfile,UUID,dayRepetition,weekRepetition) values (\'" + reminders_lists.get(i).get_reminder_name() + "\',\'" + String.valueOf(temp_date.get(Calendar.HOUR_OF_DAY)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MINUTE)) + "\',\'" + String.valueOf(temp_date.get(Calendar.YEAR)) + "\',\'" + String.valueOf(temp_date.get(Calendar.MONTH)) + "\',\'" + String.valueOf(temp_date.get(Calendar.DAY_OF_MONTH)) + "\',\'" + "null" + "\',\'" + reminders_lists.get(i).get_reminder_UUID().toString() +"\',\'" +String.valueOf(dayRepetition)+ "\',\'" +String.valueOf(weekRepetition)+ "\')");
+
                 } else {
                     throw e;
                 }
@@ -232,7 +259,7 @@ public class RecurringReminderPresenter {
     }
 
     public void save_reminder_checkbox_sql(ArrayList<CheckBoxListSingle> checkbox_lists,UUID uuid){
-        String uuid_of_reminder=String.join("_",uuid.toString().split("-"));
+        String uuid_of_reminder=combine(uuid.toString().split("-"),"_");
 
         SQLiteDatabase save_database=this.from_main.openOrCreateDatabase("CheckBoxReminders",Context.MODE_PRIVATE,null);
         Cursor cursor = save_database.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
@@ -267,7 +294,7 @@ public class RecurringReminderPresenter {
     public ArrayList<CheckBoxListSingle> load_from_sql_with_uuid_ver(UUID uuid_from_reminders){
         //load sql based on UUID, store based on UUID
         SQLiteDatabase checkbox_database;
-        String uuid_string=String.join("_",uuid_from_reminders.toString().split("-"));
+        String uuid_string=combine(uuid_from_reminders.toString().split("-"),"_");
         ArrayList<CheckBoxListSingle> onereminder_list=new ArrayList<CheckBoxListSingle>();
         Cursor c;
         try {
@@ -312,7 +339,11 @@ public class RecurringReminderPresenter {
         // put code here to process multiple amount of reminders at the same time
         PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-        alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+        } else {
+            alarm_manager.set(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+        }
         // put reminders name and time for the reminder
         // how to snooze reminders?
 

@@ -107,7 +107,7 @@
         android:layout_width="155dp"
         android:layout_height="20dp"
         android:layout_marginStart="18dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="13dp"
         android:onClick="show_date_picker"
         android:text="30/12/2999 Saturday"
         android:textSize="16sp"
