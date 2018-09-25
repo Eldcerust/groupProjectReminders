@@ -21,9 +21,10 @@ import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 
-public class newRecurringReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragmentReminderCreation.OnDialogDismissListener{
+public class newRecurringReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
     private TextView date_button,time_button;
     private TextInputLayout inserted_title;
     private Button create_button,edit_button,delete_button;
@@ -238,7 +239,7 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             this.create_or_modify_reminder.set_list(this.r_adapter.getDataLists());
             this.create_or_modify_reminder.set_days_of_repetition(returnDaysSaveable());
             String[] commandArray=new String[2];
-            commandArray[0]="FetchRecurringReminderModel";
+            commandArray[0]="FetchReminderModel";
             return_to_main();
             Intent create_button_intent=create_finished_intent("State",commandArray);
             finish();
@@ -252,7 +253,7 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
         // require remindermodel to be known at what position
         // require access to the reminder position
         String[] commandArray=new String[2];
-        commandArray[0]="DeletThisRecurringReminder";
+        commandArray[0]="DeletThis";
         commandArray[1]=String.valueOf(this.edit_int);
         Intent delete_button_intent=create_finished_intent("State",commandArray);
         finish();
@@ -265,9 +266,8 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
             //this.list_adapter.save_checkbox();
             this.create_or_modify_reminder.set_list(this.r_adapter.getDataLists());
-            this.create_or_modify_reminder.set_days_of_repetition(returnDaysSaveable());
             String[] commandArray=new String[2];
-            commandArray[0]="FindAndReplaceRecurringReminder";
+            commandArray[0]="FindAndReplace";
             commandArray[1]=String.valueOf(this.edit_int);
             return_to_main();
             Intent edit_button_intent=create_finished_intent("State",commandArray);
