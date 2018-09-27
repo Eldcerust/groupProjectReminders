@@ -15,7 +15,7 @@ import org.w3c.dom.Text;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-public class CustomListAdapter extends BaseAdapter{
+public class CustomListAdapter extends BaseAdapter implements getListCustomListAdapter{
     //do we even need views in MVP then?
     //
     private ArrayList<RemindersModel> reminder_lists;
@@ -73,6 +73,11 @@ public class CustomListAdapter extends BaseAdapter{
 
     public void set_data_refresh(ArrayList<RemindersModel> a){
         this.reminder_lists=a;
+    }
+
+    @Override
+    public ArrayList<RemindersModel> return_reminders_model() {
+        return this.reminder_lists;
     }
 
     static class ViewHolder{

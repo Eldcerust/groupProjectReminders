@@ -159,14 +159,14 @@ public class MainActivity extends AppCompatActivity
         ArrayList<RemindersModel> initialized=this.initialize_display();
         this.list_adapter=new CustomListAdapter(this, initialized);
         list_view.setAdapter(this.list_adapter);
-        list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        list_view.setOnItemClickListener(new setOnClickItemListenerMod(this.list_adapter::return_reminders_model) {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Object list_view_object=list_view.getItemAtPosition(position);
                 System.out.println(list_view_object);
                 // how to get the type of the object without intentionally casting it first?
                 // cast it and test for return type?
-                reminder_transmission_holder=initialized.get(position);
+                reminder_transmission_holder=this.getterInteface.return_reminders_model().get(position);
                 if(reminder_transmission_holder.return_type().equals("Basic Reminders")){
                     //the above if function serve to check if there are overrides to determine what type of object is the item. Child class overrides will be enforced even if cast.
                     //insert code for basic reminders editor
