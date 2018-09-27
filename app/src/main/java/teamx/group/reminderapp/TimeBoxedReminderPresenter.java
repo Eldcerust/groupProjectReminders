@@ -20,7 +20,7 @@ import android.os.Build;
 import android.util.Log;
 
 public class TimeBoxedReminderPresenter{
-    protected ArrayList<TimeBoxedReminderModel> reminder_list=new ArrayList<TimeBoxedReminderModel>();
+    protected volatile ArrayList<TimeBoxedReminderModel> reminder_list=new ArrayList<TimeBoxedReminderModel>();
     protected Context from_main;
     protected VoiceProfilePresenter presenter_for_presets;
 
@@ -34,7 +34,7 @@ public class TimeBoxedReminderPresenter{
         sort_reminders();
     }
 
-    public ArrayList<TimeBoxedReminderModel> get_reminder_list() {
+    public synchronized ArrayList<TimeBoxedReminderModel> get_reminder_list() {
         return this.reminder_list;
     }
 
@@ -53,7 +53,7 @@ public class TimeBoxedReminderPresenter{
         return check_box_return;
     }
 
-    public void delete_object_reminderModel(TimeBoxedReminderModel a){
+    public synchronized void delete_object_reminderModel(TimeBoxedReminderModel a){
         ArrayList<TimeBoxedReminderModel> temp_list=get_reminder_list();
         int positionOfDel=temp_list.indexOf(a);
         if(positionOfDel!=-1){
@@ -216,7 +216,7 @@ public class TimeBoxedReminderPresenter{
         return(reminders_list_for_save);
     }
 
-    public void change_reminder_similar_object(TimeBoxedReminderModel original,TimeBoxedReminderModel modified){
+    public synchronized void change_reminder_similar_object(TimeBoxedReminderModel original,TimeBoxedReminderModel modified){
         this.reminder_list.set(this.reminder_list.indexOf(original),modified);
     }
 
@@ -481,7 +481,7 @@ public class TimeBoxedReminderPresenter{
     }
 
 
-    public void setReminder_list(ArrayList<TimeBoxedReminderModel> reminder_list) {
+    public synchronized void setReminder_list(ArrayList<TimeBoxedReminderModel> reminder_list) {
         this.reminder_list = reminder_list;
     }
 }

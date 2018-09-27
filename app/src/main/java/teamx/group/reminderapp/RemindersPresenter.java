@@ -20,7 +20,7 @@ import android.os.Build;
 import android.util.Log;
 
 public class RemindersPresenter{
-    protected ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
+    protected volatile ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
     protected Context from_main;
     protected VoiceProfilePresenter presenter_for_presets;
 
@@ -34,7 +34,7 @@ public class RemindersPresenter{
         sort_reminders();
     }
 
-    public ArrayList<RemindersModel> get_reminder_list() {
+    public synchronized ArrayList<RemindersModel> get_reminder_list() {
         return this.reminder_list;
     }
 
@@ -53,7 +53,7 @@ public class RemindersPresenter{
         return check_box_return;
     }
 
-    public void delete_object_reminderModel(RemindersModel a){
+    public synchronized void delete_object_reminderModel(RemindersModel a){
         ArrayList<RemindersModel> temp_list=get_reminder_list();
         int positionOfDel=temp_list.indexOf(a);
         if(positionOfDel!=-1){
@@ -72,7 +72,7 @@ public class RemindersPresenter{
         sort_reminders();
     }
 
-    public void change_reminder_uuidbased(RemindersModel modified){
+    public synchronized void change_reminder_uuidbased(RemindersModel modified){
         UUID modified_uuid=modified.get_reminder_UUID();
         for(int a=0;a<this.reminder_list.size();a++){
             if(this.reminder_list.get(a).get_reminder_UUID()==modified_uuid){
@@ -84,7 +84,7 @@ public class RemindersPresenter{
 
     public void change_reminder_position_wremindermodel(RemindersModel modified,int position){
         this.reminder_list.set(position,modified);
-        sort_reminders();;
+        sort_reminders();
     }
 
     public void delete_reminder(RemindersModel non_modified){
@@ -455,7 +455,7 @@ public class RemindersPresenter{
     }
 
 
-    public void setReminder_list(ArrayList<RemindersModel> reminder_list) {
+    public synchronized void setReminder_list(ArrayList<RemindersModel> reminder_list) {
         this.reminder_list = reminder_list;
     }
 }

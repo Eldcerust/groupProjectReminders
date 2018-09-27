@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity
 
     // this is unfortunately not the first activity, despite being the most important activity
     private VoiceProfilePresenter profiles_voice;
-    public static RemindersPresenter reminders_present;
-    public static RecurringReminderPresenter recurringReminderPresenter;
-    public static TimeBoxedReminderPresenter timebox_presenter;
+    private volatile RemindersPresenter reminders_present;
+    private volatile RecurringReminderPresenter recurringReminderPresenter;
+    private volatile TimeBoxedReminderPresenter timebox_presenter;
     private ListView list_view;
     private CustomListAdapter list_adapter;
     private AlarmManager alarm_mgr;
@@ -137,18 +137,18 @@ public class MainActivity extends AppCompatActivity
 
     private ArrayList<RemindersModel> initialize_display(){
         ArrayList<RemindersModel> temp_lost=null;
-        temp_lost=this.reminders_present.get_reminder_list();
+        temp_lost=(ArrayList<RemindersModel>)this.reminders_present.get_reminder_list().clone();
         ArrayList<RecurringRemindersModel> temp_recurring=null;
-        temp_recurring=this.recurringReminderPresenter.get_reminder_list();
+        temp_recurring=(ArrayList<RecurringRemindersModel>)this.recurringReminderPresenter.get_reminder_list().clone();
         ArrayList<TimeBoxedReminderModel> temp_timebox=null;
-        temp_timebox=this.timebox_presenter.get_reminder_list();
+        temp_timebox=(ArrayList<TimeBoxedReminderModel>)this.timebox_presenter.get_reminder_list().clone();
 
         for(int a=0;a<temp_recurring.size();a++){
-            temp_lost.add((RemindersModel)temp_recurring.get(a));
+            if(temp_lost.indexOf((RemindersModel)temp_recurring.get(a))==-1)temp_lost.add((RemindersModel)temp_recurring.get(a));
         }
 
         for(int a=0;a<temp_timebox.size();a++){
-            temp_lost.add((RemindersModel)temp_timebox.get(a));
+            if(temp_lost.indexOf((RemindersModel)temp_timebox.get(a))==-1)temp_lost.add((RemindersModel)temp_timebox.get(a));
         }
 
         temp_lost =this.reminders_present.sort_reminders(temp_lost);
@@ -156,7 +156,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void set_list_on_display() {
-        this.list_adapter=new CustomListAdapter(this, this.initialize_display());
+        ArrayList<RemindersModel> initialized=this.initialize_display();
+        this.list_adapter=new CustomListAdapter(this, initialized);
         list_view.setAdapter(this.list_adapter);
         list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity
                 System.out.println(list_view_object);
                 // how to get the type of the object without intentionally casting it first?
                 // cast it and test for return type?
-                reminder_transmission_holder=reminders_present.get_reminder(position);
+                reminder_transmission_holder=initialized.get(position);
                 if(reminder_transmission_holder.return_type().equals("Basic Reminders")){
                     //the above if function serve to check if there are overrides to determine what type of object is the item. Child class overrides will be enforced even if cast.
                     //insert code for basic reminders editor

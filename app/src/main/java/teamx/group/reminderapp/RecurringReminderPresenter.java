@@ -20,13 +20,13 @@ import android.os.Build;
 import android.util.Log;
 
 public class RecurringReminderPresenter {
-    protected ArrayList<RecurringRemindersModel> reminder_list= new ArrayList<>();
+    protected volatile ArrayList<RecurringRemindersModel> reminder_list= new ArrayList<>();
 
     public ArrayList<RecurringRemindersModel> getReminder_list() {
         return reminder_list;
     }
 
-    public void setReminder_list(ArrayList<RecurringRemindersModel> reminder_list) {
+    public synchronized void setReminder_list(ArrayList<RecurringRemindersModel> reminder_list) {
         this.reminder_list = reminder_list;
     }
 
@@ -40,7 +40,7 @@ public class RecurringReminderPresenter {
         sort_reminders();
     }
 
-    public ArrayList<RecurringRemindersModel> get_reminder_list() {
+    public synchronized ArrayList<RecurringRemindersModel> get_reminder_list() {
         return this.reminder_list;
     }
 
@@ -85,11 +85,11 @@ public class RecurringReminderPresenter {
         sort_reminders();;
     }
 
-    public void change_reminder_similar_object(RecurringRemindersModel original,RecurringRemindersModel modified){
+    public synchronized void change_reminder_similar_object(RecurringRemindersModel original,RecurringRemindersModel modified){
         this.reminder_list.set(this.reminder_list.indexOf(original),modified);
     }
 
-    public void delete_object_reminderModel(RecurringRemindersModel a){
+    public synchronized void delete_object_reminderModel(RecurringRemindersModel a){
         ArrayList<RecurringRemindersModel> temp_list=get_reminder_list();
         int positionOfDel=temp_list.indexOf(a);
         if(positionOfDel!=-1){
