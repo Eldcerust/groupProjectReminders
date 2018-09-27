@@ -35,7 +35,7 @@ public class RemindersPresenter{
     }
 
     public ArrayList<RemindersModel> get_reminder_list() {
-        return reminder_list;
+        return this.reminder_list;
     }
 
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile, ArrayList<CheckBoxListSingle> checkBoxListSingles){
@@ -54,7 +54,12 @@ public class RemindersPresenter{
     }
 
     public void delete_object_reminderModel(RemindersModel a){
-        this.reminder_list.remove(a);
+        ArrayList<RemindersModel> temp_list=get_reminder_list();
+        int positionOfDel=temp_list.indexOf(a);
+        if(positionOfDel!=-1){
+            temp_list.remove(positionOfDel);
+        }
+        setReminder_list(temp_list);
     }
 
     public void insert_reminder(RemindersModel a){
@@ -450,4 +455,7 @@ public class RemindersPresenter{
     }
 
 
+    public void setReminder_list(ArrayList<RemindersModel> reminder_list) {
+        this.reminder_list = reminder_list;
+    }
 }

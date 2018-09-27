@@ -11,6 +11,8 @@ import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,11 +30,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class newBasicReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
+public class newTimeBoxedReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,ListDialogFragment.OnDialogDismissListener{
     private TextView date_button,time_button;
+    private TextInputLayout workSessionView,shortBreakView,longBreakView,shortToLongBreakView;
     private TextInputLayout inserted_title;
     private Button create_button,edit_button,delete_button;
-    private RemindersModel create_or_modify_reminder;
+    private TimeBoxedReminderModel create_or_modify_reminder;
     private Calendar current_date;
     private int edit_int;
     private String[] date_array;
@@ -40,7 +43,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     private MyRecyclerViewAdapter r_adapter;
     private RecyclerView.LayoutManager r_layoutmanager;
 
-    public RemindersModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
+    public TimeBoxedReminderModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
 
     public Intent create_finished_intent(String key, String[] data){
         Intent intent_finished=new Intent();
@@ -53,7 +56,13 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_basic_reminder);
+        setContentView(R.layout.activity_time_boxed_reminder);
+
+        this.workSessionView=(TextInputLayout)findViewById(R.id.workSession);
+        this.shortBreakView=(TextInputLayout) findViewById(R.id.shortBreakView);
+        this.longBreakView=(TextInputLayout) findViewById(R.id.longBreakView);
+        this.shortToLongBreakView=(TextInputLayout) findViewById(R.id.shortToLongView);
+
         this.date_button=(TextView)findViewById(R.id.dateView);
         this.time_button=(TextView)findViewById(R.id.timeView);
         this.inserted_title=(TextInputLayout)findViewById(R.id.textInputLayout);
@@ -77,6 +86,13 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     }
 
+    public void setWorkSessions(int workSession,int shortBreak,int longBreak,int shortToLong){
+        this.workSessionView.getEditText().setText(String.valueOf(workSession));
+        this.shortBreakView.getEditText().setText(String.valueOf(shortBreak));
+        this.longBreakView.getEditText().setText(String.valueOf(longBreak));
+        this.shortToLongBreakView.getEditText().setText(String.valueOf(shortToLong));
+    }
+
     public void check_edit_status(int edit_int){
         if(edit_int==Integer.MAX_VALUE){
             // do something here to fetch the reminder specified at position
@@ -88,7 +104,13 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
             ArrayList<CheckBoxListSingle> checkbox_initialize=new ArrayList<CheckBoxListSingle>();
             checkbox_initialize.add(new CheckBoxListSingle(false,""));
 
-            this.create_or_modify_reminder=new RemindersModel("",Calendar.getInstance(),checkbox_initialize);
+            this.create_or_modify_reminder=new TimeBoxedReminderModel("",Calendar.getInstance(),checkbox_initialize);
+            this.create_or_modify_reminder.set_work_session(25);
+            this.create_or_modify_reminder.set_short_break_sesssion(5);
+            this.create_or_modify_reminder.set_long_break_session(15);
+            this.create_or_modify_reminder.set_short_to_long_transition(4);
+
+            this.setWorkSessions(25,5,15,4);
 
             this.current_date=create_or_modify_reminder.get_reminder_date_time();
             this.set_calendar_text(this.current_date);
@@ -101,7 +123,9 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
             this.edit_button.setVisibility(View.VISIBLE);
             this.delete_button.setVisibility(View.VISIBLE);
 
-            this.create_or_modify_reminder=MainActivity.reminder_transmission_holder;
+            this.create_or_modify_reminder=MainActivity.timeBoxed_transmission_holder;
+
+            this.setWorkSessions(this.create_or_modify_reminder.get_work_session(),this.create_or_modify_reminder.get_short_break_session(),this.create_or_modify_reminder.get_long_break_session(),this.create_or_modify_reminder.get_short_to_long_transition());
             this.edit_int=MainActivity.reminder_position;
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
             this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
@@ -175,28 +199,46 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void create_button_onclick(View v){
         String title_determined=this.inserted_title.getEditText().getText().toString();
-        if(title_determined.length()>0){
-            System.out.println(title_determined);
-            this.create_or_modify_reminder.set_reminder_name(title_determined);
-            this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
-            //this.list_adapter.save_checkbox();
-            this.create_or_modify_reminder.set_list(this.r_adapter.getDataLists());
-            String[] commandArray=new String[2];
-            commandArray[0]="FetchReminderModel";
-            return_to_main();
-            Intent create_button_intent=create_finished_intent("State",commandArray);
-            finish();
-        } else {
-            Toast.makeText(this.getApplicationContext(),"Reminder name should not be zero. Please try again.",Toast.LENGTH_LONG).show();
+        try {
+            if (title_determined.length() > 0) {
+                System.out.println(title_determined);
+                this.create_or_modify_reminder.set_reminder_name(title_determined);
+                this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
+                int[] workArray = {Integer.valueOf(workSessionView.getEditText().getText().toString()), Integer.valueOf(shortBreakView.getEditText().getText().toString()), Integer.valueOf(longBreakView.getEditText().getText().toString()), Integer.valueOf(shortToLongBreakView.getEditText().getText().toString())};
+                for (int a = 0; a > workArray.length; a++) {
+                    if (workArray[a] == 0) {
+                        throw new Exception("Work session is 0");
+                    }
+                }
+                this.create_or_modify_reminder.set_work_session(workArray[0]);
+                this.create_or_modify_reminder.set_short_break_sesssion(workArray[1]);
+                this.create_or_modify_reminder.set_long_break_session(workArray[2]);
+                this.create_or_modify_reminder.set_short_to_long_transition(workArray[3]);
+                //this.list_adapter.save_checkbox();
+                this.create_or_modify_reminder.set_list(this.r_adapter.getDataLists());
+                String[] commandArray = new String[2];
+                commandArray[0] = "FetchTimeBoxedModel";
+                return_to_main();
+                Intent create_button_intent = create_finished_intent("State", commandArray);
+                finish();
+            } else {
+                throw new Exception("Empty name");
+            }
+            //use intent sent back to signal the fetch of data
+        } catch (Exception e){
+            if(e.getMessage().equals("Work session is 0")){
+                Toast.makeText(this.getApplicationContext(), "Work Session should not be 0. Please try again.", Toast.LENGTH_LONG).show();
+            } else if(e.getMessage().equals("Empty name")){
+                Toast.makeText(this.getApplicationContext(), "Reminder name should not be zero. Please try again.", Toast.LENGTH_LONG).show();
+            }
         }
-        //use intent sent back to signal the fetch of data
     }
 
     public void delete_button_onclick(View v){
         // require remindermodel to be known at what position
         // require access to the reminder position
         String[] commandArray=new String[2];
-        commandArray[0]="DeletThis";
+        commandArray[0]="DeletThisTimeBoxed";
         commandArray[1]=String.valueOf(this.edit_int);
         Intent delete_button_intent=create_finished_intent("State",commandArray);
         finish();
@@ -204,26 +246,45 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
 
     public void edit_button_onclick(View v){
         String title_determined=this.inserted_title.getEditText().getText().toString();
-        if(title_determined.length()>0) {
-            this.create_or_modify_reminder.set_reminder_name(title_determined);
-            this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
-            //this.list_adapter.save_checkbox();
-            this.create_or_modify_reminder.set_list(this.r_adapter.getDataLists());
-            String[] commandArray=new String[2];
-            commandArray[0]="FindAndReplace";
-            commandArray[1]=String.valueOf(this.edit_int);
-            return_to_main();
-            Intent edit_button_intent=create_finished_intent("State",commandArray);
-            finish();
-        } else {
-            Toast.makeText(this.getApplicationContext(),"Reminder name should not be zero. Please try again.",Toast.LENGTH_LONG).show();
+        try {
+            if (title_determined.length() > 0) {
+                System.out.println(title_determined);
+                this.create_or_modify_reminder.set_reminder_name(title_determined);
+                this.create_or_modify_reminder.set_reminder_date_time(this.current_date);
+                int[] workArray = {Integer.valueOf(workSessionView.getEditText().getText().toString()), Integer.valueOf(shortBreakView.getEditText().getText().toString()), Integer.valueOf(longBreakView.getEditText().getText().toString()), Integer.valueOf(shortToLongBreakView.getEditText().getText().toString())};
+                for (int a = 0; a > workArray.length; a++) {
+                    if (workArray[a] == 0) {
+                        throw new Exception("Work session is 0");
+                    }
+                }
+                this.create_or_modify_reminder.set_work_session(workArray[0]);
+                this.create_or_modify_reminder.set_short_break_sesssion(workArray[1]);
+                this.create_or_modify_reminder.set_long_break_session(workArray[2]);
+                this.create_or_modify_reminder.set_short_to_long_transition(workArray[3]);
+                //this.list_adapter.save_checkbox();
+                this.create_or_modify_reminder.set_list(this.r_adapter.getDataLists());
+                String[] commandArray = new String[2];
+                commandArray[0] = "FindAndReplaceTimeBoxed";
+                return_to_main();
+                Intent create_button_intent = create_finished_intent("State", commandArray);
+                finish();
+            } else {
+                throw new Exception("Empty name");
+            }
+            //use intent sent back to signal the fetch of data
+        } catch (Exception e){
+            if(e.getMessage().equals("Work session is 0")){
+                Toast.makeText(this.getApplicationContext(), "Work Session should not be 0. Please try again.", Toast.LENGTH_LONG).show();
+            } else if(e.getMessage().equals("Empty name")){
+                Toast.makeText(this.getApplicationContext(), "Reminder name should not be zero. Please try again.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     public void return_to_main(){
-        MainActivity.reminder_transmission_holder=null;
-        MainActivity.reminder_transmission_holder=this.create_or_modify_reminder;
+        MainActivity.timeBoxed_transmission_holder=null;
+        MainActivity.timeBoxed_transmission_holder=this.create_or_modify_reminder;
         MainActivity.reminder_position=this.edit_int;
     }
-    // find a way to insert remindersmodel in and out without ridiculous strats
+    // find a way to insert TimeBoxedReminderModel in and out without ridiculous strats
 }

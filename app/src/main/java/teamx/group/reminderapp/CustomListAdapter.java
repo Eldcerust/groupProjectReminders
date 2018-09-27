@@ -73,7 +73,6 @@ public class CustomListAdapter extends BaseAdapter{
 
     public void set_data_refresh(ArrayList<RemindersModel> a){
         this.reminder_lists=a;
-        notifyDataSetChanged();
     }
 
     static class ViewHolder{

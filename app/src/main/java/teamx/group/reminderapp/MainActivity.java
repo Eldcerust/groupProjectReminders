@@ -24,8 +24,9 @@ public class MainActivity extends AppCompatActivity
 
     // this is unfortunately not the first activity, despite being the most important activity
     private VoiceProfilePresenter profiles_voice;
-    private RemindersPresenter reminders_present;
-    private RecurringReminderPresenter recurringReminderPresenter;
+    public static RemindersPresenter reminders_present;
+    public static RecurringReminderPresenter recurringReminderPresenter;
+    public static TimeBoxedReminderPresenter timebox_presenter;
     private ListView list_view;
     private CustomListAdapter list_adapter;
     private AlarmManager alarm_mgr;
@@ -33,9 +34,10 @@ public class MainActivity extends AppCompatActivity
     private newBasicReminder temporary_class_container_basic_reminder_creation;
     public static RemindersModel reminder_transmission_holder,reminder_transmission_holder_original;
     public static RecurringRemindersModel recurringRemindersModel_transmission_holder,recurringRemindersModel_transmission_holder_original;
+    public static TimeBoxedReminderModel timeBoxed_transmission_holder,timeBoxed_transmission_holder_original;
     public static int reminder_position;
     public static int reminder_creation_type;
-    public static ArrayList<RemindersModel> display_list;
+    public static ArrayList<RemindersModel> temp_lost;
 
 
     @Override
@@ -82,7 +84,28 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void setReminders_present(RemindersPresenter reminders_present) {
+        this.reminders_present = reminders_present;
+    }
+
+    public void setRecurringReminderPresenter(RecurringReminderPresenter recurringReminderPresenter) {
+        this.recurringReminderPresenter = recurringReminderPresenter;
+    }
+
+    public void setTimebox_presenter(TimeBoxedReminderPresenter timebox_presenter) {
+        this.timebox_presenter = timebox_presenter;
+    }
+
     public RecurringReminderPresenter check_reminder_presenter_initial(RecurringReminderPresenter reminders_present) {
+        if(reminders_present.get_reminder_list().size()==1 && reminders_present.get_reminder_list().get(0).get_reminder_name().equals("")){
+            reminders_present.delete_reminder_position(0);
+            return reminders_present;
+        } else {
+            return reminders_present;
+        }
+    }
+
+    public TimeBoxedReminderPresenter check_reminder_presenter_initial(TimeBoxedReminderPresenter reminders_present) {
         if(reminders_present.get_reminder_list().size()==1 && reminders_present.get_reminder_list().get(0).get_reminder_name().equals("")){
             reminders_present.delete_reminder_position(0);
             return reminders_present;
@@ -95,9 +118,15 @@ public class MainActivity extends AppCompatActivity
         this.reminders_present=new RemindersPresenter(this.getApplicationContext(),profiles_voice);
         this.reminders_present.load_reminders_from_sql();
         this.reminders_present=check_reminder_presenter_initial(this.reminders_present);
+
         this.recurringReminderPresenter=new RecurringReminderPresenter(this.getApplicationContext(),profiles_voice);
         this.recurringReminderPresenter.load_reminders_from_sql();
         this.recurringReminderPresenter=check_reminder_presenter_initial(this.recurringReminderPresenter);
+
+        this.timebox_presenter=new TimeBoxedReminderPresenter(this.getApplicationContext(),profiles_voice);
+        this.timebox_presenter.load_reminders_from_sql();
+        this.timebox_presenter=check_reminder_presenter_initial(this.timebox_presenter);
+
         this.profiles_voice=new VoiceProfilePresenter(this.getApplicationContext());
         this.profiles_voice.load_sql_voice_profiles();
     }
@@ -106,19 +135,28 @@ public class MainActivity extends AppCompatActivity
         b.add(a);
     }
 
-    public void initialize_display(){
-        display_list=null;
-        display_list=this.reminders_present.get_reminder_list();
-        for(int a=0;a<this.recurringReminderPresenter.get_reminder_list().size();a++){
-            display_list.add((RemindersModel)this.recurringReminderPresenter.get_reminder_list().get(a));
+    private ArrayList<RemindersModel> initialize_display(){
+        ArrayList<RemindersModel> temp_lost=null;
+        temp_lost=this.reminders_present.get_reminder_list();
+        ArrayList<RecurringRemindersModel> temp_recurring=null;
+        temp_recurring=this.recurringReminderPresenter.get_reminder_list();
+        ArrayList<TimeBoxedReminderModel> temp_timebox=null;
+        temp_timebox=this.timebox_presenter.get_reminder_list();
+
+        for(int a=0;a<temp_recurring.size();a++){
+            temp_lost.add((RemindersModel)temp_recurring.get(a));
         }
 
-        display_list=this.reminders_present.sort_reminders(display_list);
+        for(int a=0;a<temp_timebox.size();a++){
+            temp_lost.add((RemindersModel)temp_timebox.get(a));
+        }
+
+        temp_lost =this.reminders_present.sort_reminders(temp_lost);
+        return temp_lost;
     }
 
     public void set_list_on_display() {
-        initialize_display();
-        this.list_adapter=new CustomListAdapter(this,display_list);
+        this.list_adapter=new CustomListAdapter(this, this.initialize_display());
         list_view.setAdapter(this.list_adapter);
         list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -145,7 +183,13 @@ public class MainActivity extends AppCompatActivity
                     reminder_transmission_holder=null;
                     startActivityForResult(reminder_edit_intent,2);
                 }else if(reminder_transmission_holder.return_type().equals("Time Boxed Reminders")) {
-
+                    Intent reminder_edit_intent=new Intent(MainActivity.this,newTimeBoxedReminder.class);
+                    reminder_edit_intent.putExtra("EDITMODE",position);
+                    reminder_position=position;
+                    timeBoxed_transmission_holder=(TimeBoxedReminderModel) reminder_transmission_holder;
+                    timeBoxed_transmission_holder_original=(TimeBoxedReminderModel) reminder_transmission_holder;
+                    reminder_transmission_holder=null;
+                    startActivityForResult(reminder_edit_intent,2);
                 }
             }
         });
@@ -192,14 +236,44 @@ public class MainActivity extends AppCompatActivity
                     recurringRemindersModel_transmission_holder=null;
                     recurringRemindersModel_transmission_holder_original=null;
                     type="RecurringReminderModel";
+                }else if(data_received.getStringArrayExtra("State")[0].equals("FetchTimeBoxedModel")){
+                    TimeBoxedReminderModel a=timeBoxed_transmission_holder;
+                    timeBoxed_transmission_holder=null;
+                    timeBoxed_transmission_holder_original=null;
+                    this.timebox_presenter.insert_reminder(a);
+                    type="TimeBoxedReminderModel";
+                }else if(data_received.getStringArrayExtra("State")[0].equals("FindAndReplaceTimeBoxed")){
+                    TimeBoxedReminderModel a=timeBoxed_transmission_holder;
+                    TimeBoxedReminderModel b=timeBoxed_transmission_holder_original;
+                    timeBoxed_transmission_holder=null;
+                    timeBoxed_transmission_holder_original=null;
+                    this.timebox_presenter.change_reminder_similar_object(b,a);
+                    type="TimeBoxedReminderModel";
+                }else if(data_received.getStringArrayExtra("State")[0].equals("DeletThisTimeBoxed")){
+                    this.timebox_presenter.delete_object_reminderModel(timeBoxed_transmission_holder_original);
+                    timeBoxed_transmission_holder=null;
+                    timeBoxed_transmission_holder_original=null;
+                    type="TimeBoxedReminderModel";
                 }
 
                 if(type.equals("BasicReminder")) {
-                    this.reminders_present.save_reminders_sql(this.reminders_present.reminder_list);
-                    this.list_adapter.set_data_refresh(display_list);
+                    setReminders_present(this.reminders_present);
+                    this.reminders_present.reminder_list.size();
+                    this.reminders_present.save_reminders_sql(this.reminders_present.get_reminder_list());
+                    this.list_adapter.set_data_refresh(this.initialize_display());
+                    this.list_adapter.notifyDataSetChanged();
                 } else if(type.equals("RecurringReminderModel")){
-                    this.recurringReminderPresenter.save_reminders_sql(this.recurringReminderPresenter.reminder_list);
-                    this.list_adapter.set_data_refresh(display_list);
+                    setRecurringReminderPresenter(this.recurringReminderPresenter);
+                    this.recurringReminderPresenter.reminder_list.size();
+                    this.recurringReminderPresenter.save_reminders_sql(this.recurringReminderPresenter.get_reminder_list());
+                    this.list_adapter.set_data_refresh(this.initialize_display());
+                    this.list_adapter.notifyDataSetChanged();
+                } else if(type.equals("TimeBoxedReminderModel")){
+                    setTimebox_presenter(this.timebox_presenter);
+                    this.timebox_presenter.reminder_list.size();
+                    this.timebox_presenter.save_reminders_sql(this.timebox_presenter.get_reminder_list());
+                    this.list_adapter.set_data_refresh(this.initialize_display());
+                    this.list_adapter.notifyDataSetChanged();
                 }
                 //create function on reminderpresenter to edit sql
             }
@@ -287,10 +361,10 @@ public class MainActivity extends AppCompatActivity
                 startActivityForResult(intent_fab,2);
                 break;
             case 2:
-                //intent_fab=new Intent(MainActivity.this,newTimeBoxReminder.class);
-                //intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
-                //startActivityForResult(intent_fab,2);
-                //break;
+                intent_fab=new Intent(MainActivity.this,newTimeBoxedReminder.class);
+                intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
+                startActivityForResult(intent_fab,2);
+                break;
         }
     }
 }

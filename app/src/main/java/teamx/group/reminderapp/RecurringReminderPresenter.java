@@ -21,6 +21,15 @@ import android.util.Log;
 
 public class RecurringReminderPresenter {
     protected ArrayList<RecurringRemindersModel> reminder_list= new ArrayList<>();
+
+    public ArrayList<RecurringRemindersModel> getReminder_list() {
+        return reminder_list;
+    }
+
+    public void setReminder_list(ArrayList<RecurringRemindersModel> reminder_list) {
+        this.reminder_list = reminder_list;
+    }
+
     protected Context from_main;
     protected VoiceProfilePresenter presenter_for_presets;
 
@@ -32,7 +41,7 @@ public class RecurringReminderPresenter {
     }
 
     public ArrayList<RecurringRemindersModel> get_reminder_list() {
-        return reminder_list;
+        return this.reminder_list;
     }
 
     public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile, ArrayList<CheckBoxListSingle> checkBoxListSingles){
@@ -81,7 +90,12 @@ public class RecurringReminderPresenter {
     }
 
     public void delete_object_reminderModel(RecurringRemindersModel a){
-        this.reminder_list.remove(a);
+        ArrayList<RecurringRemindersModel> temp_list=get_reminder_list();
+        int positionOfDel=temp_list.indexOf(a);
+        if(positionOfDel!=-1){
+            temp_list.remove(positionOfDel);
+        }
+        setReminder_list(temp_list);
     }
 
     public void delete_reminder(RecurringRemindersModel non_modified){

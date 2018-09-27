@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class newRecurringReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener{
+public class newRecurringReminder extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener,OnCheckedDeleteDays,OnCheckedAddDays,getDays{
     private TextView date_button,time_button;
     private TextInputLayout inserted_title;
     private Button create_button,edit_button,delete_button;
@@ -36,7 +36,7 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
     private RecyclerView r_view;
     private MyRecyclerViewAdapter r_adapter;
     private RecyclerView.LayoutManager r_layoutmanager;
-    private CheckBox monday,tuesday,wednesday,thursday,friday,saturday,sunday;
+    private CheckBoxWListener monday=new CheckBoxWListener(),tuesday=new CheckBoxWListener(),wednesday=new CheckBoxWListener(),thursday=new CheckBoxWListener(),friday=new CheckBoxWListener(),saturday=new CheckBoxWListener(),sunday=new CheckBoxWListener();
 
     public RemindersModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
 
@@ -59,20 +59,25 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
         this.delete_button=(Button)findViewById(R.id.delete_button);
         this.current_date= Calendar.getInstance();
 
-        this.monday=(CheckBox)findViewById(R.id.checkBoxMonday);
-        this.tuesday=(CheckBox)findViewById(R.id.checkBoxTuesday);
-        this.wednesday=(CheckBox)findViewById(R.id.checkBoxWednesday);
-        this.thursday=(CheckBox)findViewById(R.id.checkBoxThursday);
-        this.friday=(CheckBox)findViewById(R.id.checkBoxFriday);
-        this.saturday=(CheckBox)findViewById(R.id.checkBoxSaturday);
-        this.sunday=(CheckBox)findViewById(R.id.checkBoxSunday);
+        this.monday.checkBox=(CheckBox)findViewById(R.id.checkBoxMonday);
+        this.monday.checkDaysList=returnCheckedListener(1);
+        this.tuesday.checkBox=(CheckBox)findViewById(R.id.checkBoxTuesday);
+        this.tuesday.checkDaysList=returnCheckedListener(2);
+        this.wednesday.checkBox=(CheckBox)findViewById(R.id.checkBoxWednesday);
+        this.wednesday.checkDaysList=returnCheckedListener(3);
+        this.thursday.checkBox=(CheckBox)findViewById(R.id.checkBoxThursday);
+        this.thursday.checkDaysList=returnCheckedListener(4);
+        this.friday.checkBox=(CheckBox)findViewById(R.id.checkBoxFriday);
+        this.friday.checkDaysList=returnCheckedListener(5);
+        this.saturday.checkBox=(CheckBox)findViewById(R.id.checkBoxSaturday);
+        this.saturday.checkDaysList=returnCheckedListener(6);
+        this.sunday.checkBox=(CheckBox)findViewById(R.id.checkBoxSunday);
+        this.sunday.checkDaysList=returnCheckedListener(7);
 
         this.edit_int=getIntent().getIntExtra("EDITMODE",-1);
 
-        this.check_edit_status(edit_int);
         this.r_view=(RecyclerView)findViewById(R.id.checkboxListView);
-
-        setup_checkboxes();
+        this.check_edit_status(edit_int);
     }
 
     public void setup_checkboxes(){
@@ -85,22 +90,17 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
 
     }
 
-    public void setDays(){
-        CheckBox[] checkBoxes={this.monday,this.tuesday,this.wednesday,this.thursday,this.friday,this.saturday,this.sunday};
-        for(int a=0;a<checkBoxes.length;a++){
-            int temp=a;
-            checkBoxes[temp].setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    int dayPosition=temp+1;
-                    if(isChecked){
-                        days.add(dayPosition);
-                    } else {
-                        days=removeInteger(days,dayPosition);
-                    }
+    public OnFocusModRecurringCheck returnCheckedListener(int position){
+        return new OnFocusModRecurringCheck(this::addDays,this::deleteDays,this::getDays){
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    this.getAddInterface().addDays(position);
+                } else {
+                    this.getDeleteInterface().deleteDays(position);
                 }
-            });
-        }
+            }
+        };
     }
 
     public List<Integer> getDigits(int num) {
@@ -114,6 +114,16 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             collectDigits(num / 10, digits);
         }
         digits.add(num % 10);
+    }
+
+    public void setDays(){
+        this.monday.checkBox.setOnCheckedChangeListener(this.monday.checkDaysList);
+        this.tuesday.checkBox.setOnCheckedChangeListener(this.tuesday.checkDaysList);
+        this.wednesday.checkBox.setOnCheckedChangeListener(this.wednesday.checkDaysList);
+        this.thursday.checkBox.setOnCheckedChangeListener(this.thursday.checkDaysList);
+        this.friday.checkBox.setOnCheckedChangeListener(this.friday.checkDaysList);
+        this.saturday.checkBox.setOnCheckedChangeListener(this.saturday.checkDaysList);
+        this.sunday.checkBox.setOnCheckedChangeListener(this.sunday.checkDaysList);
     }
 
     public void check_edit_status(int edit_int){
@@ -136,6 +146,7 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             this.days=emptyList;
             setDays();
 
+            setup_checkboxes();
             //the previous implentation I did was to use some kind of sql function to zero in what the function is about
             //interface to transfer the reminder object in?
         } else {
@@ -149,32 +160,25 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
 
             int number=this.create_or_modify_reminder.get_days_of_repetition();
             this.days=getDigits(number);
+            List<Integer> tempDays=getDigits(number);
 
-            for(int a=0;a<this.days.size();a++){
-                switch(this.days.get(a)){
+            for(int a=0;a<tempDays.size();a++){
+                switch(tempDays.get(a)){
                     case 0:
-                        this.days.remove(a);
                         break;
-                    case 1: this.monday.setChecked(true);
-                        this.days.remove(a);
+                    case 1: this.monday.checkBox.setChecked(true);
                         break;
-                    case 2: this.tuesday.setChecked(true);
-                        this.days.remove(a);
+                    case 2: this.tuesday.checkBox.setChecked(true);
                         break;
-                    case 3: this.wednesday.setChecked(true);
-                        this.days.remove(a);
+                    case 3: this.wednesday.checkBox.setChecked(true);
                         break;
-                    case 4: this.thursday.setChecked(true);
-                        this.days.remove(a);
+                    case 4: this.thursday.checkBox.setChecked(true);
                         break;
-                    case 5: this.friday.setChecked(true);
-                        this.days.remove(a);
+                    case 5: this.friday.checkBox.setChecked(true);
                         break;
-                    case 6: this.saturday.setChecked(true);
-                        this.days.remove(a);
+                    case 6: this.saturday.checkBox.setChecked(true);
                         break;
-                    case 7: this.sunday.setChecked(true);
-                        this.days.remove(a);
+                    case 7: this.sunday.checkBox.setChecked(true);
                         break;
                 }
             }
@@ -182,6 +186,8 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
             setDays();
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
             this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
+
+            setup_checkboxes();
         }
     }
 
@@ -246,31 +252,12 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
 
     public int returnDaysSaveable(){
         String daysjoined="";
-        List<Integer> temp_list;
-        if(this.days.size()>1){
-            temp_list=removeInteger(this.days,0);
-        } else if(this.days.size()==0) {
-            temp_list=new ArrayList<Integer>();
-            temp_list.add(0);
-        }else {
-            temp_list=this.days;
-        }
+        List<Integer> temp_list=getDays();
         for(int i=0;i<temp_list.size();i++){
-            daysjoined=daysjoined.concat(String.valueOf(temp_list.get(i)));
-            temp_list.remove(i);
+            int var=temp_list.get(i);
+            daysjoined=daysjoined.concat(String.valueOf(var));
         }
         return (Integer.valueOf(daysjoined));
-    }
-
-    public List<Integer> removeInteger(List<Integer> list,int value){
-        List<Integer> temp=list;
-        try {
-            int indexValue=temp.indexOf(value);
-            temp.remove(indexValue);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return temp;
     }
 
     public void create_button_onclick_recurring(View v){
@@ -326,5 +313,28 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
         MainActivity.recurringRemindersModel_transmission_holder=null;
         MainActivity.recurringRemindersModel_transmission_holder=this.create_or_modify_reminder;
         MainActivity.reminder_position=this.edit_int;
+    }
+
+    @Override
+    public void addDays(int position) {
+        this.days.add(position);
+    }
+
+    @Override
+    public void deleteDays(int position) {
+        int positiondel=this.days.indexOf(position);
+        if(positiondel!=-1){
+            this.days.remove(positiondel);
+        }
+    }
+
+    @Override
+    public List<Integer> getDays() {
+        return this.days;
+    }
+
+    static class CheckBoxWListener{
+        private CheckBox checkBox;
+        private OnFocusModRecurringCheck checkDaysList;
     }
 }

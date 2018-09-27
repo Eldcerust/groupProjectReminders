@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 public class TimeBoxedReminderModel extends RemindersModel {
     private int work_session;
@@ -17,6 +18,69 @@ public class TimeBoxedReminderModel extends RemindersModel {
         this.short_break_session=short_break_session_given;
         this.long_break_session=long_break_session_given;
         this.short_to_long_transition=short_to_long_transition_given;
+    }
+
+    public TimeBoxedReminderModel(String reminder_name, Calendar reminder_date_time, ArrayList<CheckBoxListSingle> bulletin_list) {
+        super(reminder_name, reminder_date_time, bulletin_list);
+    }
+
+    public TimeBoxedReminderModel(String reminder_name, Calendar reminder_date_time) {
+        super(reminder_name, reminder_date_time);
+    }
+
+    @Override
+    public void set_reminder_name(String string) {
+        super.set_reminder_name(string);
+    }
+
+    @Override
+    public void set_list(ArrayList<CheckBoxListSingle> list_set) {
+        super.set_list(list_set);
+    }
+
+    @Override
+    public void set_reminder_date_time(Calendar date) {
+        super.set_reminder_date_time(date);
+    }
+
+    @Override
+    public void set_reminder_voice_profile(VoiceProfileModel voice_profile) {
+        super.set_reminder_voice_profile(voice_profile);
+    }
+
+    @Override
+    public void set_reminder_UUID(UUID uuid) {
+        super.set_reminder_UUID(uuid);
+    }
+
+    @Override
+    public String get_reminder_name() {
+        return super.get_reminder_name();
+    }
+
+    @Override
+    public Calendar get_reminder_date_time() {
+        return super.get_reminder_date_time();
+    }
+
+    @Override
+    public UUID get_reminder_UUID() {
+        return super.get_reminder_UUID();
+    }
+
+    @Override
+    public VoiceProfileModel get_reminder_voice_profile() {
+        return super.get_reminder_voice_profile();
+    }
+
+    @Override
+    public String return_type() {
+        return "Time Boxed Reminders";
+    }
+
+    @Override
+    public ArrayList<CheckBoxListSingle> get_checkbox_list() {
+        return super.get_checkbox_list();
     }
 
     public int get_work_session(){return this.work_session;}
