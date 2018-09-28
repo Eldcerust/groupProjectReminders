@@ -15,6 +15,18 @@ public class MyTimePickerFragment extends DialogFragment {
         int hour=c.get(Calendar.HOUR_OF_DAY);
         int minute=c.get(Calendar.MINUTE);
 
-        return new TimePickerDialog(getActivity(), (newBasicReminder)getActivity(), hour, minute,true);
+        TimePickerDialog timePickerDialog;
+
+        try{
+            timePickerDialog=new TimePickerDialog(getActivity(), (newBasicReminder)getActivity(), hour, minute,true);
+        }catch (Exception e){
+            if(e.toString().equals("java.lang.ClassCastException: teamx.group.reminderapp.newRecurringReminder cannot be cast to teamx.group.reminderapp.newBasicReminder")){
+                timePickerDialog=new TimePickerDialog(getActivity(), (newRecurringReminder)getActivity(), hour, minute,true);
+            }else if(e.toString().equals("java.lang.ClassCastException: teamx.group.reminderapp.newTimeBoxReminder cannot be cast to teamx.group.reminderapp.newBasicReminder")){
+                timePickerDialog=new TimePickerDialog(getActivity(), (newTimeBoxedReminder)getActivity(), hour, minute,true);
+            }
+        }
+
+        return timePickerDialog;
     }
 }
