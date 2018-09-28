@@ -15,7 +15,7 @@ public class MyTimePickerFragment extends DialogFragment {
         int hour=c.get(Calendar.HOUR_OF_DAY);
         int minute=c.get(Calendar.MINUTE);
 
-        TimePickerDialog timePickerDialog;
+        TimePickerDialog timePickerDialog=null;
 
         try{
             timePickerDialog=new TimePickerDialog(getActivity(), (newBasicReminder)getActivity(), hour, minute,true);
