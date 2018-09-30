@@ -83,7 +83,7 @@ public class newTimeBoxedReminder extends AppCompatActivity implements DatePicke
         this.r_layoutmanager=new LinearLayoutManager(this);
         this.r_view.setLayoutManager(this.r_layoutmanager);
 
-
+        this.r_adapter.setmLayoutManager(this.r_layoutmanager);
     }
 
     public void setWorkSessions(int workSession,int shortBreak,int longBreak,int shortToLong){

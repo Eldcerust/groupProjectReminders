@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,6 +24,7 @@ public class TimeBoxedReminderPresenter{
     protected volatile ArrayList<TimeBoxedReminderModel> reminder_list=new ArrayList<TimeBoxedReminderModel>();
     protected Context from_main;
     protected VoiceProfilePresenter presenter_for_presets;
+    private deleteNotification deleteNotificationInterface=ActualMainAndNotificationActivity.receiver::deleteNotification;
 
     //function to attach data to viewers
     //logic of data applied sent to viewers, or done here?
@@ -38,15 +40,6 @@ public class TimeBoxedReminderPresenter{
         return this.reminder_list;
     }
 
-    public void create_reminder(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile, ArrayList<CheckBoxListSingle> checkBoxListSingles){
-        TimeBoxedReminderModel new_reminder=new TimeBoxedReminderModel(reminder_name,date_time,checkBoxListSingles);
-        new_reminder.set_reminder_voice_profile(voice_profile);
-        this.reminder_list.add(new_reminder);
-        this.sort_reminders();
-        this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
-        // in other words, both has to be detected and displayed in a manner of having "2 reminders"
-    }
-
     public ArrayList<CheckBoxListSingle> new_empty_checkbox_list(){
         ArrayList<CheckBoxListSingle> check_box_return=new ArrayList<CheckBoxListSingle>();
         check_box_return.add(new CheckBoxListSingle(false,""));
@@ -57,6 +50,7 @@ public class TimeBoxedReminderPresenter{
         ArrayList<TimeBoxedReminderModel> temp_list=get_reminder_list();
         int positionOfDel=temp_list.indexOf(a);
         if(positionOfDel!=-1){
+            this.deleteNotificationInterface.deleteNotification(a.get_reminder_UUID().toString());
             temp_list.remove(positionOfDel);
         }
         setReminder_list(temp_list);
@@ -64,12 +58,7 @@ public class TimeBoxedReminderPresenter{
 
     public void insert_reminder(TimeBoxedReminderModel a){
         this.reminder_list.add(a);
-    }
-
-    public void change_reminders(String reminder_name, Calendar date_time, VoiceProfileModel voice_profile,ArrayList<CheckBoxListSingle> checkBoxListSingles, int position){
-        this.reminder_list.remove(position);
-        this.create_reminder(reminder_name,date_time,voice_profile,checkBoxListSingles);
-        sort_reminders();
+        this.set_alarm_manager(a,this.from_main,101);
     }
 
     public void change_reminder_uuidbased(TimeBoxedReminderModel modified){
@@ -98,14 +87,6 @@ public class TimeBoxedReminderPresenter{
 
     public void delete_reminder_position(int position){
         this.reminder_list.remove(position);
-    }
-
-    public void create_reminder(String reminder_name, Calendar date_time,ArrayList<CheckBoxListSingle> checkBoxListSingles){
-        TimeBoxedReminderModel new_reminder=new TimeBoxedReminderModel(reminder_name,date_time,checkBoxListSingles);
-        this.reminder_list.add(new_reminder);
-        this.sort_reminders();
-        this.set_alarm_manager(this.from_main,101); // needs another function that determines whether or not two reminders have same time negligibly
-        // in other words, both has to be detected and displayed in a manner of having "2 reminders"
     }
 
     public TimeBoxedReminderModel get_reminder(Integer position_of_reminder){
@@ -218,6 +199,8 @@ public class TimeBoxedReminderPresenter{
 
     public synchronized void change_reminder_similar_object(TimeBoxedReminderModel original,TimeBoxedReminderModel modified){
         this.reminder_list.set(this.reminder_list.indexOf(original),modified);
+        this.deleteNotificationInterface.deleteNotification(original.get_reminder_UUID().toString());
+        this.set_alarm_manager(modified,this.from_main,101);
     }
 
     public ArrayList<Thread> add_thread(ArrayList<Thread> thread_master,UUID uuid_reminders,int position){
@@ -290,15 +273,6 @@ public class TimeBoxedReminderPresenter{
         }
     }
 
-    public void snooze_reminder(TimeBoxedReminderModel reminder_model, int minutes_snoozed){
-        Calendar reminder_model_time=reminder_model.get_reminder_date_time();
-        reminder_model_time.add(Calendar.MINUTE,1);
-        this.sort_reminders();
-        this.set_alarm_manager(this.from_main,101);
-        //requires to access the presenter from alarm manager models
-        //fuse the alarm mgr model?
-    }
-
     public String combine(String[] arrayString, String pattern) {
         String combined = "";
         for (int a = 0; a < arrayString.length; a++) {
@@ -346,15 +320,17 @@ public class TimeBoxedReminderPresenter{
         return onereminder_list;
     }
 
-    public void set_alarm_manager(Context main_context,int notification_count){
-        TimeBoxedReminderModel reminders_model=fetch_earliest_reminder();
+    public void set_alarm_manager(TimeBoxedReminderModel reminders_model,Context main_context,int notification_count){
         //check conditionally if the alarm is even nearer than previous alarm, lest ignore
         AlarmManager alarm_manager=(AlarmManager)main_context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
         //does alarm manager work if created under the pretext from a different class from the views of the app?
 
         Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class); //needs intent from view class or main activity?
+        SimpleDateFormat df=new SimpleDateFormat("HH:mm");
+        String dateTime=df.format(reminders_model.get_reminder_date_time().getTime());
+        String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString()};
 
-        intent.putExtra("ReminderNameAndTime",String.valueOf(reminders_model.get_reminder_name()+","+String.valueOf(reminders_model.get_reminder_date_time().getTime())));
+        intent.putExtra("oneReminder",array);
 
         // put code here to process multiple amount of reminders at the same time
         PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);

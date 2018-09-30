@@ -12,7 +12,7 @@ import android.support.v4.app.NotificationManagerCompat;
 
 import java.util.ArrayList;
 
-public class AlarmReceiver extends BroadcastReceiver{
+public class AlarmReceiver extends BroadcastReceiver implements deleteNotification{
 
     private NotificationManager notif_mgr; //for android Oreo
     private NotificationManagerCompat old_notif_mgr;
@@ -20,6 +20,8 @@ public class AlarmReceiver extends BroadcastReceiver{
     private static final int NOTIFICATION_ID=101;
     private static final int NOTIFICIATION_ID_PERMANENT=102;
     private static final String TAG="SlightlyDifferentReminder";
+    public static ArrayList<Thread> threads=new ArrayList<Thread>();
+    protected volatile Context contextFromMain;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -31,16 +33,19 @@ public class AlarmReceiver extends BroadcastReceiver{
             holder.reminder_name = intent_alarm_receive[1];
             holder.reminder_time = intent_alarm_receive[2];
             holder.reminder_type = intent_alarm_receive[3];
+            holder.reminder_uuid = intent_alarm_receive[4];
             list_of_reminders.add(holder);
         }else if(intent_alarm_receive[0].equals("multipleReminder")){
-            for(int a=0;a<(intent_alarm_receive.length-1)/3;a++){
+            for(int a=0;a<(intent_alarm_receive.length-1)/4;a++){
                 SimpleReminderHolder holder=new SimpleReminderHolder();
-                holder.reminder_name=intent_alarm_receive[1+3*a];
-                holder.reminder_name=intent_alarm_receive[2+3*a];
-                holder.reminder_name=intent_alarm_receive[3+3*a];
+                holder.reminder_name=intent_alarm_receive[1+4*a];
+                holder.reminder_name=intent_alarm_receive[2+4*a];
+                holder.reminder_name=intent_alarm_receive[3+4*a];
+                holder.reminder_uuid=intent_alarm_receive[4+4*a];
                 list_of_reminders.add(holder);
             }
         }
+        this.contextFromMain=context;
         create_notification(context,"SlightDiffReminder",ActualMainAndNotificationActivity.class);
         // put logic that allows what code to be detected and what to do
     }
@@ -108,9 +113,31 @@ public class AlarmReceiver extends BroadcastReceiver{
         return long_line_of_text;
     }
 
+    @Override
+    public void deleteNotification(String UUID) {
+        for(int a=0;a<list_of_reminders.size();a++){
+            SimpleReminderHolder temp=list_of_reminders.get(a);
+            threads.add(new Thread(()->{
+                if(temp.reminder_uuid.equals(UUID)){
+                    list_of_reminders.remove(temp);
+                }
+            }));
+        }
+        for(int i=0;i<threads.size();i++){
+            threads.get(i).run();
+            try {
+                threads.get(i).join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        create_notification(this.contextFromMain,"SlightDiffReminder",ActualMainAndNotificationActivity.class);
+    }
+
     static class SimpleReminderHolder{
         String reminder_name;
         String reminder_time;
         String reminder_type;
+        String reminder_uuid;
     }
 }

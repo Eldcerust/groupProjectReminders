@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.util.Log;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -23,8 +25,10 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
     protected RecyclerView mRecyclerView;
+    protected volatile RecyclerView.LayoutManager mLayoutManager;
     private volatile boolean status_add=false;
     private volatile boolean save_state=false;
+    private volatile RecyclerView.SmoothScroller mScroller;
 
 
     // data is passed into the constructor
@@ -32,13 +36,25 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         this.mInflater = LayoutInflater.from(context);
         this.data_lists=data;
         this.mRecyclerView=recycler_view;
+        this.mScroller=new LinearSmoothScroller(context) {
+            @Override protected int getVerticalSnapPreference() {
+                return LinearSmoothScroller.SNAP_TO_START;
+            }
+        };
+    }
+
+    public void setmLayoutManager(RecyclerView.LayoutManager mLayoutManager) {
+        this.mLayoutManager = mLayoutManager;
     }
 
     // inflates the row layout from xml when needed
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.list_row_checkboxes, parent,false);
-
+        view.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
         return new ViewHolder(view);
     }
 
@@ -139,7 +155,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                             @Override
                             public void onGlobalLayout() {
                                 setStatus_add(false);
-                                mRecyclerView.getChildAt(position).findViewById(R.id.customEditText).requestFocus();
+                                mRecyclerView.getLayoutManager().scrollToPosition(position);
+                                //mRecyclerView.getChildAt(position).findViewById(R.id.customEditText).requestFocus();
                                 mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                             }
                         });
@@ -163,7 +180,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                             @Override
                             public void onGlobalLayout() {
                                 setStatus_add(false);
-                                mRecyclerView.getChildAt(position-1).findViewById(R.id.customEditText).requestFocus();
+                                mRecyclerView.getLayoutManager().scrollToPosition(position-1);
                                 mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                             }
                         });

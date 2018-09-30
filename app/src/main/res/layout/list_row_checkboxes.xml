@@ -20,12 +20,12 @@
     <android.support.design.widget.TextInputLayout
         android:id="@+id/textInputLayoutInsideView"
         android:layout_width="0dp"
-        android:layout_weight="1"
         android:layout_height="43dp"
         android:layout_margin="0dp"
         android:layout_marginBottom="1dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="4dp"
+        android:layout_weight="1"
         app:hintEnabled="false"
         app:layout_constraintBottom_toBottomOf="@+id/checkBoxOfView"
         app:layout_constraintEnd_toEndOf="parent"

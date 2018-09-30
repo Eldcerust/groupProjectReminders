@@ -9,7 +9,9 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +41,7 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
     private RecyclerView r_view;
     private MyRecyclerViewAdapter r_adapter;
     private RecyclerView.LayoutManager r_layoutmanager;
+    private RecyclerView.SmoothScroller r_scroller;
 
     public RemindersModel get_create_or_modify_reminder() {return create_or_modify_reminder;}
 
@@ -71,9 +74,11 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
         this.r_adapter=new MyRecyclerViewAdapter(this,this.create_or_modify_reminder.get_checkbox_list(),this.r_view);
         this.r_view.setAdapter(this.r_adapter);
 
-        this.r_layoutmanager=new LinearLayoutManager(this);
+        this.r_layoutmanager=new CustomLayoutManager(this);
+        //this.r_layoutmanager=new LinearLayoutManager(this);
         this.r_view.setLayoutManager(this.r_layoutmanager);
 
+        this.r_adapter.setmLayoutManager(this.r_layoutmanager);
 
     }
 
