@@ -60,7 +60,7 @@ public class ListDialogSnooze extends DialogFragment{
                             callingBack.onDialogDismissSnoozeListener(99,"cancelSnooze");
                             return true;
                         } else {
-                            return false;
+                            return true;
                         }
                     }
                 });

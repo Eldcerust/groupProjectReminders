@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -198,6 +199,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
         list_view.setOnItemLongClickListener(new OnLongClickMod(this.list_adapter::return_reminders_model) {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -235,7 +237,7 @@ public class MainActivity extends AppCompatActivity
                     timeSnooze.show((getSupportFragmentManager()),"Time Snoozer");
                     //startActivityForResult(reminder_edit_intent,2);
                 }
-                return false;
+                return true;
             }
         });
     }
@@ -416,30 +418,56 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDialogDismissSnoozeListener(int position, String reminderType) {
+        String type="";
         if(reminderType.equals("Basic Reminders")){
             RemindersModel temp=reminder_transmission_holder;
             Calendar temp_cal=temp.get_reminder_date_time();
             temp_cal.add(Calendar.MINUTE,position);
+            temp.set_reminder_date_time(temp_cal);
+            SimpleDateFormat df=new SimpleDateFormat("HH:mm");
+            String dateTime=df.format(temp_cal.getTime());
+            System.out.println(dateTime);
             this.reminders_present.change_reminder_similar_object(reminder_transmission_holder,temp);
-            reminder_transmission_holder=null;
+            type="BasicReminders";
         }else if(reminderType.equals("Recurring Reminders")){
             RecurringRemindersModel temp=recurringRemindersModel_transmission_holder;
             Calendar temp_cal=temp.get_reminder_date_time();
             temp_cal.add(Calendar.MINUTE,position);
+            temp.set_reminder_date_time(temp_cal);
             this.recurringReminderPresenter.change_reminder_similar_object(recurringRemindersModel_transmission_holder,temp);
-            reminder_transmission_holder=null;
-            recurringRemindersModel_transmission_holder=null;
+            type="RecurringReminders";
         }else if(reminderType.equals("Timebox Reminders")){
             TimeBoxedReminderModel temp=timeBoxed_transmission_holder;
             Calendar temp_cal=temp.get_reminder_date_time();
             temp_cal.add(Calendar.MINUTE,position);
+            temp.set_reminder_date_time(temp_cal);
             this.timebox_presenter.change_reminder_similar_object(timeBoxed_transmission_holder,temp);
-            reminder_transmission_holder=null;
-            timeBoxed_transmission_holder=null;
+            type="TimeBoxedReminders";
         }else if(reminderType.equals("cancelSnooze")){
             reminder_transmission_holder=null;
             reminder_transmission_holder=null;
             timeBoxed_transmission_holder=null;
+        }
+
+        if(type.equals("BasicReminders")) {
+            setReminders_present(this.reminders_present);
+            this.reminders_present.reminder_list.size();
+            this.reminders_present.save_reminders_sql(this.reminders_present.get_reminder_list());
+            this.list_adapter.set_data_refresh(this.initialize_display());
+            this.list_adapter.notifyDataSetChanged();
+            this.list_adapter.set_earliest_alarm();
+        } else if(type.equals("RecurringReminders")){
+            setRecurringReminderPresenter(this.recurringReminderPresenter);
+            this.recurringReminderPresenter.reminder_list.size();
+            this.recurringReminderPresenter.save_reminders_sql(this.recurringReminderPresenter.get_reminder_list());
+            this.list_adapter.set_data_refresh(this.initialize_display());
+            this.list_adapter.notifyDataSetChanged();
+        } else if(type.equals("TimeBoxedReminders")){
+            setTimebox_presenter(this.timebox_presenter);
+            this.timebox_presenter.reminder_list.size();
+            this.timebox_presenter.save_reminders_sql(this.timebox_presenter.get_reminder_list());
+            this.list_adapter.set_data_refresh(this.initialize_display());
+            this.list_adapter.notifyDataSetChanged();
         }
     }
 }

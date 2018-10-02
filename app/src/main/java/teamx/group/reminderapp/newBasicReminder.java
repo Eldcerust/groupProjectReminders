@@ -109,6 +109,9 @@ public class newBasicReminder extends AppCompatActivity implements DatePickerDia
             this.create_or_modify_reminder=MainActivity.reminder_transmission_holder;
             this.edit_int=MainActivity.reminder_position;
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
+
+            this.set_calendar_text(this.current_date);
+
             this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
 
             setup_checkboxes();
