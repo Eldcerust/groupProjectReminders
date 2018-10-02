@@ -20,11 +20,19 @@ public class CustomLayoutManager extends LinearLayoutManager {
     }
 
     @Override
+    public boolean supportsPredictiveItemAnimations() {
+        return false;
+    }
+
+    @Override
     public void smoothScrollToPosition(RecyclerView recyclerView,
                                        RecyclerView.State state, final int position) {
 
         LinearSmoothScroller smoothScroller =
                 new LinearSmoothScroller(mContext) {
+                    @Override protected int getVerticalSnapPreference() {
+                        return LinearSmoothScroller.SNAP_TO_START;
+                    }
 
                     //This controls the direction in which smoothScroll looks
                     //for your view
@@ -44,32 +52,22 @@ public class CustomLayoutManager extends LinearLayoutManager {
                     }
                 };
 
-        while(true){
-            if(this.getMonitor()==1) {
+        //while(true){
+            //if(this.getMonitor()==1) {
                 smoothScroller.setTargetPosition(position);
                 startSmoothScroll(smoothScroller);
-                this.setMonitor(0);
+                /*this.setMonitor(0);
             } else if(this.getMonitor()==0){
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
         }
-    }
 
     @Override
     public synchronized void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
-        this.setMonitor(1);
-    }
-
-    public synchronized int getMonitor() {
-        return this.monitor;
-    }
-
-    public void setMonitor(int monitor) {
-        this.monitor = monitor;
     }
 }

@@ -20,11 +20,10 @@ import android.database.sqlite.SQLiteException;
 import android.os.Build;
 import android.util.Log;
 
-public class TimeBoxedReminderPresenter{
+public class TimeBoxedReminderPresenter implements setAlarmManagerTimeBoxedReminderPresenter{
     protected volatile ArrayList<TimeBoxedReminderModel> reminder_list=new ArrayList<TimeBoxedReminderModel>();
     protected Context from_main;
     protected VoiceProfilePresenter presenter_for_presets;
-    private deleteNotification deleteNotificationInterface=ActualMainAndNotificationActivity.receiver::deleteNotification;
 
     //function to attach data to viewers
     //logic of data applied sent to viewers, or done here?
@@ -50,7 +49,6 @@ public class TimeBoxedReminderPresenter{
         ArrayList<TimeBoxedReminderModel> temp_list=get_reminder_list();
         int positionOfDel=temp_list.indexOf(a);
         if(positionOfDel!=-1){
-            this.deleteNotificationInterface.deleteNotification(a.get_reminder_UUID().toString());
             temp_list.remove(positionOfDel);
         }
         setReminder_list(temp_list);
@@ -199,7 +197,6 @@ public class TimeBoxedReminderPresenter{
 
     public synchronized void change_reminder_similar_object(TimeBoxedReminderModel original,TimeBoxedReminderModel modified){
         this.reminder_list.set(this.reminder_list.indexOf(original),modified);
-        this.deleteNotificationInterface.deleteNotification(original.get_reminder_UUID().toString());
         this.set_alarm_manager(modified,this.from_main,101);
     }
 
@@ -320,12 +317,13 @@ public class TimeBoxedReminderPresenter{
         return onereminder_list;
     }
 
+    @Override
     public void set_alarm_manager(TimeBoxedReminderModel reminders_model,Context main_context,int notification_count){
         //check conditionally if the alarm is even nearer than previous alarm, lest ignore
         AlarmManager alarm_manager=(AlarmManager)main_context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
         //does alarm manager work if created under the pretext from a different class from the views of the app?
 
-        Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class); //needs intent from view class or main activity?
+        Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class);
         SimpleDateFormat df=new SimpleDateFormat("HH:mm");
         String dateTime=df.format(reminders_model.get_reminder_date_time().getTime());
         String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString()};

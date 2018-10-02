@@ -18,13 +18,13 @@ import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Build;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-public class RemindersPresenter{
+public class RemindersPresenter implements setAlarmManagerReminderPresenter{
     protected volatile ArrayList<RemindersModel> reminder_list=new ArrayList<RemindersModel>();
     protected Context from_main;
     protected VoiceProfilePresenter presenter_for_presets;
-    private deleteNotification deleteNotificationInterface=ActualMainAndNotificationActivity.receiver::deleteNotification;
 
     //function to attach data to viewers
     //logic of data applied sent to viewers, or done here?
@@ -50,7 +50,6 @@ public class RemindersPresenter{
         ArrayList<RemindersModel> temp_list=get_reminder_list();
         int positionOfDel=temp_list.indexOf(a);
         if(positionOfDel!=-1){
-            this.deleteNotificationInterface.deleteNotification(a.get_reminder_UUID().toString());
             temp_list.remove(positionOfDel);
         }
         setReminder_list(temp_list);
@@ -168,7 +167,6 @@ public class RemindersPresenter{
 
     public void change_reminder_similar_object(RemindersModel original,RemindersModel modified){
         this.reminder_list.set(this.reminder_list.indexOf(original),modified);
-        this.deleteNotificationInterface.deleteNotification(original.get_reminder_UUID().toString());
         this.set_alarm_manager(modified,this.from_main,101);
     }
 
@@ -296,6 +294,7 @@ public class RemindersPresenter{
         return onereminder_list;
     }
 
+    @Override
     public void set_alarm_manager(RemindersModel reminders_model,Context main_context,int notification_count){
         //check conditionally if the alarm is even nearer than previous alarm, lest ignore
         AlarmManager alarm_manager=(AlarmManager)main_context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);

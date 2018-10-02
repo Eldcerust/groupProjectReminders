@@ -146,22 +146,26 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             setStatus_add(true);
         }
 
-        mRecyclerView.post(new Runnable() {
+        notifyDataSetChanged();
+
+        mRecyclerView.postDelayed(new Runnable() {
             @Override public void run() {
-                notifyItemInserted(position);
-                notifyItemRangeChanged(position,temp.size());
-                mRecyclerView.getViewTreeObserver()
+                mRecyclerView.smoothScrollToPosition(position);
+                //notifyItemInserted(position);
+                //notifyItemRangeChanged(position,temp.size());
+                /*mRecyclerView.getViewTreeObserver()
                         .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
                                 setStatus_add(false);
-                                mRecyclerView.getLayoutManager().scrollToPosition(position);
+                                mRecyclerView.smoothScrollToPosition(position);
+                                //mRecyclerView.getLayoutManager().scrollToPosition(position);
                                 //mRecyclerView.getChildAt(position).findViewById(R.id.customEditText).requestFocus();
                                 mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                             }
-                        });
+                        });*/
             }
-        });
+        },300);
 
     }
 
@@ -172,22 +176,25 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         int count=Integer.class.cast(temp.size());
         if(!requestState()){
             setStatus_add(true);}
-        mRecyclerView.post(new Runnable() {
+        mRecyclerView.postDelayed(new Runnable() {
             @Override public void run() {
-                notifyItemRangeChanged(position,temp.size());
-                mRecyclerView.getViewTreeObserver()
+                mRecyclerView.smoothScrollToPosition(position-1);
+                //notifyItemRangeChanged(position,temp.size());
+                /*mRecyclerView.getViewTreeObserver()
                         .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
                                 setStatus_add(false);
-                                mRecyclerView.getLayoutManager().scrollToPosition(position-1);
+                                mRecyclerView.smoothScrollToPosition(position-1);
+                                //mRecyclerView.getLayoutManager().scrollToPosition(position-1);
                                 mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                             }
-                        });
+                        });*/
             }
-        });
+        },300);
         temp.remove(position);
         this.setList(temp);
+        notifyDataSetChanged();
         }
 }
 

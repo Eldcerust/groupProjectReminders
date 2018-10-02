@@ -1,10 +1,12 @@
 package teamx.group.reminderapp;
 
 import android.app.AlarmManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,9 +20,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,ListDialogFragment.OnDialogDismissListener{
+        implements NavigationView.OnNavigationItemSelectedListener,ReminderView,ListDialogFragment.OnDialogDismissListener,ListDialogSnooze.OnDialogDismissSnoozeListener{
 
     // this is unfortunately not the first activity, despite being the most important activity
     private VoiceProfilePresenter profiles_voice;
@@ -158,6 +161,7 @@ public class MainActivity extends AppCompatActivity
     public void set_list_on_display() {
         ArrayList<RemindersModel> initialized=this.initialize_display();
         this.list_adapter=new CustomListAdapter(this, initialized);
+        this.list_adapter.setInterfaces(reminders_present::set_alarm_manager,recurringReminderPresenter::set_alarm_manager,timebox_presenter::set_alarm_manager);
         list_view.setAdapter(this.list_adapter);
         list_view.setOnItemClickListener(new setOnClickItemListenerMod(this.list_adapter::return_reminders_model) {
             @Override
@@ -192,6 +196,46 @@ public class MainActivity extends AppCompatActivity
                     reminder_transmission_holder=null;
                     startActivityForResult(reminder_edit_intent,2);
                 }
+            }
+        });
+        list_view.setOnItemLongClickListener(new OnLongClickMod(this.list_adapter::return_reminders_model) {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Object list_view_object=list_view.getItemAtPosition(position);
+                reminder_transmission_holder=this.getterInteface.return_reminders_model().get(position);
+                if(reminder_transmission_holder.return_type().equals("Basic Reminders")){
+                    //the above if function serve to check if there are overrides to determine what type of object is the item. Child class overrides will be enforced even if cast.
+                    //insert code for basic reminders editor
+                    //Intent reminder_edit_intent=new Intent(MainActivity.this,newBasicReminder.class);
+                    //reminder_edit_intent.putExtra("EDITMODE",position);
+                    ListDialogSnooze snoozeDialog= new ListDialogSnooze();
+                    snoozeDialog.setReminders(new Integer[]{1,5,10,15,30});
+                    snoozeDialog.setReminderType("Basic Reminders");
+                    DialogFragment timeSnooze=snoozeDialog;
+                    timeSnooze.show((getSupportFragmentManager()),"Time Snoozer");
+                    //startActivityForResult(reminder_edit_intent,2);
+                }else if(reminder_transmission_holder.return_type().equals("Recurring Reminders")){
+                    //Intent reminder_edit_intent=new Intent(MainActivity.this,newRecurringReminder.class);
+                    //reminder_edit_intent.putExtra("EDITMODE",position);
+                    recurringRemindersModel_transmission_holder=(RecurringRemindersModel)reminder_transmission_holder;
+                    ListDialogSnooze snoozeDialog= new ListDialogSnooze();
+                    snoozeDialog.setReminders(new Integer[]{1,5,10,15,30});
+                    snoozeDialog.setReminderType("Recurring Reminders");
+                    DialogFragment timeSnooze=snoozeDialog;
+                    timeSnooze.show((getSupportFragmentManager()),"Time Snoozer");
+                    //startActivityForResult(reminder_edit_intent,2);
+                }else if(reminder_transmission_holder.return_type().equals("Time Boxed Reminders")) {
+                    //Intent reminder_edit_intent=new Intent(MainActivity.this,newTimeBoxedReminder.class);
+                    //reminder_edit_intent.putExtra("EDITMODE",position);
+                    timeBoxed_transmission_holder=(TimeBoxedReminderModel)reminder_transmission_holder;
+                    ListDialogSnooze snoozeDialog= new ListDialogSnooze();
+                    snoozeDialog.setReminders(new Integer[]{1,5,10,15,30});
+                    snoozeDialog.setReminderType("Timeboxed Reminders");
+                    DialogFragment timeSnooze=snoozeDialog;
+                    timeSnooze.show((getSupportFragmentManager()),"Time Snoozer");
+                    //startActivityForResult(reminder_edit_intent,2);
+                }
+                return false;
             }
         });
     }
@@ -263,6 +307,7 @@ public class MainActivity extends AppCompatActivity
                     this.reminders_present.save_reminders_sql(this.reminders_present.get_reminder_list());
                     this.list_adapter.set_data_refresh(this.initialize_display());
                     this.list_adapter.notifyDataSetChanged();
+                    this.list_adapter.set_earliest_alarm();
                 } else if(type.equals("RecurringReminderModel")){
                     setRecurringReminderPresenter(this.recurringReminderPresenter);
                     this.recurringReminderPresenter.reminder_list.size();
@@ -366,6 +411,35 @@ public class MainActivity extends AppCompatActivity
                 intent_fab.putExtra("EDITMODE",Integer.MAX_VALUE);
                 startActivityForResult(intent_fab,2);
                 break;
+        }
+    }
+
+    @Override
+    public void onDialogDismissSnoozeListener(int position, String reminderType) {
+        if(reminderType.equals("Basic Reminders")){
+            RemindersModel temp=reminder_transmission_holder;
+            Calendar temp_cal=temp.get_reminder_date_time();
+            temp_cal.add(Calendar.MINUTE,position);
+            this.reminders_present.change_reminder_similar_object(reminder_transmission_holder,temp);
+            reminder_transmission_holder=null;
+        }else if(reminderType.equals("Recurring Reminders")){
+            RecurringRemindersModel temp=recurringRemindersModel_transmission_holder;
+            Calendar temp_cal=temp.get_reminder_date_time();
+            temp_cal.add(Calendar.MINUTE,position);
+            this.recurringReminderPresenter.change_reminder_similar_object(recurringRemindersModel_transmission_holder,temp);
+            reminder_transmission_holder=null;
+            recurringRemindersModel_transmission_holder=null;
+        }else if(reminderType.equals("Timebox Reminders")){
+            TimeBoxedReminderModel temp=timeBoxed_transmission_holder;
+            Calendar temp_cal=temp.get_reminder_date_time();
+            temp_cal.add(Calendar.MINUTE,position);
+            this.timebox_presenter.change_reminder_similar_object(timeBoxed_transmission_holder,temp);
+            reminder_transmission_holder=null;
+            timeBoxed_transmission_holder=null;
+        }else if(reminderType.equals("cancelSnooze")){
+            reminder_transmission_holder=null;
+            reminder_transmission_holder=null;
+            timeBoxed_transmission_holder=null;
         }
     }
 }

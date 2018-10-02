@@ -1,8 +1,12 @@
 package teamx.group.reminderapp;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +24,22 @@ public class CustomListAdapter extends BaseAdapter implements getListCustomListA
     //
     private ArrayList<RemindersModel> reminder_lists;
     private LayoutInflater inflated_layout;
-    private ArrayList<Integer> reminder_timepresent;
+    private Context context_from_main;
+
+    protected setAlarmManagerReminderPresenter basicNotifications;
+    protected setAlarmManagerRecurringReminderPresenter recurringNotifications;
+    protected setAlarmManagerTimeBoxedReminderPresenter timeboxedNotifications;
 
     public CustomListAdapter(Context context_required,ArrayList<RemindersModel> reminder_listed){
+        this.context_from_main=context_required;
         this.reminder_lists=reminder_listed;
         this.inflated_layout=LayoutInflater.from(context_required.getApplicationContext());
+    }
+
+    public void setInterfaces(setAlarmManagerReminderPresenter a,setAlarmManagerRecurringReminderPresenter b,setAlarmManagerTimeBoxedReminderPresenter c){
+        this.basicNotifications=a;
+        this.recurringNotifications=b;
+        this.timeboxedNotifications=c;
     }
 
     @Override
@@ -73,6 +88,21 @@ public class CustomListAdapter extends BaseAdapter implements getListCustomListA
 
     public void set_data_refresh(ArrayList<RemindersModel> a){
         this.reminder_lists=a;
+        set_earliest_alarm();
+    }
+
+    public void set_earliest_alarm(){
+        String typeReminder=this.reminder_lists.get(0).return_type();
+        if(typeReminder.equals("Basic Reminders")){
+            RemindersModel temp=this.reminder_lists.get(0);
+            this.basicNotifications.set_alarm_manager(temp,this.context_from_main,101);
+        }else if(typeReminder.equals("Recurring Reminders")){
+            RecurringRemindersModel temp=(RecurringRemindersModel)this.reminder_lists.get(0);
+            this.recurringNotifications.set_alarm_manager(temp,this.context_from_main,101);
+        } else if(typeReminder.equals("Time Boxed Reminders")){
+            TimeBoxedReminderModel temp=(TimeBoxedReminderModel)this.reminder_lists.get(0);
+            this.timeboxedNotifications.set_alarm_manager(temp,this.context_from_main,101);
+        }
     }
 
     @Override

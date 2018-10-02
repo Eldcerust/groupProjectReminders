@@ -23,6 +23,7 @@
         <activity android:name=".newBasicReminder" />
         <activity android:name=".newRecurringReminder" />
         <activity android:name=".newTimeBoxedReminder"></activity>
+        <receiver android:name=".AlarmReceiver"></receiver>
     </application>
 
 </manifest>
