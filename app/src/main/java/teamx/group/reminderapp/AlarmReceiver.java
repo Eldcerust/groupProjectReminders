@@ -12,7 +12,9 @@ import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class AlarmReceiver extends BroadcastReceiver{
 
@@ -30,9 +32,16 @@ public class AlarmReceiver extends BroadcastReceiver{
             NotificationCompat.Builder build_notifications=create_notification(context, "channe11", ActualMainAndNotificationActivity.class, intent_alarm_receive);
             NotificationManager notificationManager=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(TAG,NOTIFICATION_ID,build_notifications.build());
-        } else if(intent_alarm_receive[2].equals("TimeBox")){
+        } else if(intent_alarm_receive[2].equals("Recurring Reminders")){
             //String array should have time, work session,
-            create_notification(context,"channel1",ActualMainAndNotificationActivity.class,intent_alarm_receive);
+            SimpleDateFormat newFormat=new SimpleDateFormat("EEEEEEEEE");
+            String day=newFormat.format(Calendar.getInstance().getTime()).replaceAll("\\s+","");
+            String[] arrayOfNotif={intent_alarm_receive[0],intent_alarm_receive[1]+" "+day,intent_alarm_receive[2]};
+            NotificationCompat.Builder build_notifications=create_notification(context, "channe11", ActualMainAndNotificationActivity.class, arrayOfNotif);
+            NotificationManager notificationManager=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(TAG,NOTIFICATION_ID,build_notifications.build());
+        } else if(intent_alarm_receive[2].equals("Time Boxed Reminders")){
+            
         }
         this.contextFromMain=context;
         // put logic that allows what code to be detected and what to do

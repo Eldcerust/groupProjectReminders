@@ -15,7 +15,7 @@
         android:text="S"
         android:textSize="10sp"
         app:layout_constraintStart_toEndOf="@+id/checkBoxSaturday"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <CheckBox
         android:id="@+id/checkBoxSaturday"
@@ -25,7 +25,7 @@
         android:text="S"
         android:textSize="10sp"
         app:layout_constraintStart_toEndOf="@+id/checkBoxFriday"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <CheckBox
         android:id="@+id/checkBoxFriday"
@@ -35,7 +35,7 @@
         android:text="F"
         android:textSize="10sp"
         app:layout_constraintStart_toEndOf="@+id/checkBoxThursday"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <CheckBox
         android:id="@+id/checkBoxThursday"
@@ -45,7 +45,7 @@
         android:text="T"
         android:textSize="10sp"
         app:layout_constraintStart_toEndOf="@+id/checkBoxWednesday"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <TextView
         android:id="@+id/recurringView"
@@ -57,7 +57,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <TextView
         android:id="@+id/titleView"
@@ -91,46 +91,22 @@
     </android.support.design.widget.TextInputLayout>
 
     <TextView
-        android:id="@+id/dateTitleView"
+        android:id="@+id/timeTitleView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
-        android:text="Date:"
+        android:text="Time:"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/titleView" />
 
     <TextView
-        android:id="@+id/dateView"
-        android:layout_width="155dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="13dp"
-        android:onClick="show_date_picker"
-        android:text="30/12/2999 Saturday"
-        android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/dateTitleView"
-        app:layout_constraintTop_toBottomOf="@+id/titleView" />
-
-    <TextView
-        android:id="@+id/timeTitleView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
-        android:text="Time:"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@+id/dateView"
-        app:layout_constraintTop_toBottomOf="@+id/titleView" />
-
-    <TextView
         android:id="@+id/timeView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="14dp"
         android:layout_marginTop="14dp"
         android:onClick="show_time_picker"
         android:text="24:59"
@@ -155,13 +131,12 @@
         android:layout_width="299dp"
         android:layout_height="308dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="50dp"
         android:layout_marginTop="12dp"
         android:descendantFocusability="afterDescendants"
         android:focusable="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/titleView"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/recurringView" />
 
     <Button
@@ -202,7 +177,7 @@
         android:text="T"
         android:textSize="10sp"
         app:layout_constraintStart_toEndOf="@+id/checkBoxMonday"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <CheckBox
         android:id="@+id/checkBoxWednesday"
@@ -212,7 +187,7 @@
         android:text="W"
         android:textSize="10sp"
         app:layout_constraintStart_toEndOf="@+id/checkBoxTuesday"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
     <CheckBox
         android:id="@+id/checkBoxMonday"
@@ -223,7 +198,7 @@
         android:text="M"
         android:textSize="12sp"
         app:layout_constraintStart_toEndOf="@+id/recurringView"
-        app:layout_constraintTop_toBottomOf="@+id/dateTitleView" />
+        app:layout_constraintTop_toBottomOf="@+id/timeTitleView" />
 
 
 </android.support.constraint.ConstraintLayout>

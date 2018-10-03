@@ -52,7 +52,6 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recurring_reminder);
 
-        this.date_button=(TextView)findViewById(R.id.dateView);
         this.time_button=(TextView)findViewById(R.id.timeView);
         this.inserted_title=(TextInputLayout)findViewById(R.id.textInputLayout);
         this.create_button=(Button)findViewById(R.id.create_button);
@@ -186,6 +185,9 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
 
             setDays();
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
+            this.set_calendar_text(this.current_date);
+
+
             this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
 
             setup_checkboxes();
@@ -218,7 +220,6 @@ public class newRecurringReminder extends AppCompatActivity implements DatePicke
 
         String[] parsed_cal=parse_calendar_to_stringarray(cal);
 
-        this.date_button.setText(parsed_cal[0]);
         this.time_button.setText(parsed_cal[1]);
     }
 

@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import android.content.BroadcastReceiver;
@@ -310,6 +311,19 @@ public class RecurringReminderPresenter implements setAlarmManagerRecurringRemin
         return onereminder_list;
     }
 
+    public List<Integer> getDigits(int num) {
+        List<Integer> digits = new ArrayList<Integer>();
+        collectDigits(num, digits);
+        return digits;
+    }
+
+    private void collectDigits(int num, List<Integer> digits) {
+        if(num / 10 > 0) {
+            collectDigits(num / 10, digits);
+        }
+        digits.add(num % 10);
+    }
+
     @Override
     public void set_alarm_manager(RecurringRemindersModel reminders_model,Context main_context,int notification_count){
         //check conditionally if the alarm is even nearer than previous alarm, lest ignore
@@ -318,18 +332,72 @@ public class RecurringReminderPresenter implements setAlarmManagerRecurringRemin
 
         Intent intent = new Intent(main_context.getApplicationContext(), ActualMainAndNotificationActivity.receiver.getClass());
         SimpleDateFormat df=new SimpleDateFormat("HH:mm");
-        String dateTime=df.format(reminders_model.get_reminder_date_time().getTime());
+        Calendar temp_time=reminders_model.get_reminder_date_time();
+        String dateTime=df.format(temp_time.getTime());
         String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString()};
+
+        //put code here to identify which date needs to be set
+
+        ArrayList<Calendar> recurringAlarmCal=new ArrayList<Calendar>();
+
+        List<Integer> dateRepetition=getDigits(reminders_model.get_days_of_repetition());
+        for(int a=0;a<dateRepetition.size();a++){
+            Calendar newCal=null;
+            switch(dateRepetition.get(a)){
+                case 0:
+                    break;
+                case 1:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,1);
+                    recurringAlarmCal.add(newCal);
+                    break;
+                case 2:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,2);
+                    recurringAlarmCal.add(newCal);
+                    break;
+                case 3:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,3);
+                    recurringAlarmCal.add(newCal);
+                    break;
+                case 4:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,4);
+                    recurringAlarmCal.add(newCal);
+                    break;
+                case 5:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,5);
+                    recurringAlarmCal.add(newCal);
+                    break;
+                case 6:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,6);
+                    recurringAlarmCal.add(newCal);
+                    break;
+                case 7:
+                    newCal=(Calendar)temp_time.clone();
+                    newCal.set(Calendar.DAY_OF_WEEK,7);
+                    recurringAlarmCal.add(newCal);
+                    break;
+            }
+        }
 
         intent.putExtra("oneReminder",array);
 
         // put code here to process multiple amount of reminders at the same time
-        PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_ONE_SHOT);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+            for(int i=0;i<recurringAlarmCal.size();i++){
+                alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,recurringAlarmCal.get(i).getTimeInMillis(),pending_intent);
+            }
+            //alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
         } else {
-            alarm_manager.set(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+            for(int i=0;i<recurringAlarmCal.size();i++){
+                alarm_manager.set(AlarmManager.RTC_WAKEUP,recurringAlarmCal.get(i).getTimeInMillis(),pending_intent);
+            }
         }
         // put reminders name and time for the reminder
         // how to snooze reminders?
