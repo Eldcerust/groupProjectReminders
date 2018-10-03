@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,7 +42,15 @@ public class AlarmReceiver extends BroadcastReceiver{
             NotificationManager notificationManager=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(TAG,NOTIFICATION_ID,build_notifications.build());
         } else if(intent_alarm_receive[2].equals("Time Boxed Reminders")){
-            
+            Intent serviceIntent=new Intent("teamx.group.reminderapp.ServiceReminder");
+            serviceIntent.setClass(context,MainActivity.class);
+            serviceIntent.putExtra("Pomodoro",intent_alarm_receive);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent);
+            } else {
+                context.startService(intent);
+            }
         }
         this.contextFromMain=context;
         // put logic that allows what code to be detected and what to do

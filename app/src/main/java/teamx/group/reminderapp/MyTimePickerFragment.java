@@ -22,7 +22,7 @@ public class MyTimePickerFragment extends DialogFragment {
         }catch (Exception e){
             if(e.toString().equals("java.lang.ClassCastException: teamx.group.reminderapp.newRecurringReminder cannot be cast to teamx.group.reminderapp.newBasicReminder")){
                 timePickerDialog=new TimePickerDialog(getActivity(), (newRecurringReminder)getActivity(), hour, minute,true);
-            }else if(e.toString().equals("java.lang.ClassCastException: teamx.group.reminderapp.newTimeBoxReminder cannot be cast to teamx.group.reminderapp.newBasicReminder")){
+            }else if(e.toString().equals("java.lang.ClassCastException: teamx.group.reminderapp.newTimeBoxedReminder cannot be cast to teamx.group.reminderapp.newBasicReminder")){
                 timePickerDialog=new TimePickerDialog(getActivity(), (newTimeBoxedReminder)getActivity(), hour, minute,true);
             }
         }

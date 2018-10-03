@@ -18,6 +18,7 @@ import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 public class TimeBoxedReminderPresenter implements setAlarmManagerTimeBoxedReminderPresenter{
@@ -34,6 +35,8 @@ public class TimeBoxedReminderPresenter implements setAlarmManagerTimeBoxedRemin
         this.reminder_list=load_reminders_from_sql();
         sort_reminders();
     }
+
+
 
     public synchronized ArrayList<TimeBoxedReminderModel> get_reminder_list() {
         return this.reminder_list;
@@ -326,7 +329,7 @@ public class TimeBoxedReminderPresenter implements setAlarmManagerTimeBoxedRemin
         Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class);
         SimpleDateFormat df=new SimpleDateFormat("HH:mm");
         String dateTime=df.format(reminders_model.get_reminder_date_time().getTime());
-        String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString()};
+        String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString(),String.valueOf(reminders_model.get_work_session()),String.valueOf(reminders_model.get_short_break_session()),String.valueOf(reminders_model.get_long_break_session()),String.valueOf(reminders_model.get_short_to_long_transition())};
 
         intent.putExtra("oneReminder",array);
 

@@ -128,6 +128,7 @@ public class newTimeBoxedReminder extends AppCompatActivity implements DatePicke
             this.setWorkSessions(this.create_or_modify_reminder.get_work_session(),this.create_or_modify_reminder.get_short_break_session(),this.create_or_modify_reminder.get_long_break_session(),this.create_or_modify_reminder.get_short_to_long_transition());
             this.edit_int=MainActivity.reminder_position;
             this.current_date=this.create_or_modify_reminder.get_reminder_date_time();
+            this.set_calendar_text(this.current_date);
             this.inserted_title.getEditText().setText(this.create_or_modify_reminder.get_reminder_name());
 
             setup_checkboxes();
