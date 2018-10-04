@@ -329,15 +329,21 @@ public class TimeBoxedReminderPresenter implements setAlarmManagerTimeBoxedRemin
         Intent intent = new Intent(main_context.getApplicationContext(), AlarmReceiver.class);
         SimpleDateFormat df=new SimpleDateFormat("HH:mm");
         String dateTime=df.format(reminders_model.get_reminder_date_time().getTime());
-        String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString(),String.valueOf(reminders_model.get_work_session()),String.valueOf(reminders_model.get_short_break_session()),String.valueOf(reminders_model.get_long_break_session()),String.valueOf(reminders_model.get_short_to_long_transition())};
+        int[] workArray={reminders_model.get_work_session(),reminders_model.get_short_break_session(),reminders_model.get_long_break_session(),reminders_model.get_short_to_long_transition()};
 
-        intent.putExtra("oneReminder",array);
+        ArrayList<Calendar> calendar_timing=new ArrayList<Calendar>();
+        ArrayList<String> timingOfBreak=new ArrayList<String>();
 
         // put code here to process multiple amount of reminders at the same time
-        PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pending_intent=PendingIntent.getBroadcast(main_context,notification_count,intent,PendingIntent.FLAG_ONE_SHOT);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+            Calendar now=reminders_model.get_reminder_date_time();
+            for(int a=0;a<workArray[3];a++){
+                String[] array={reminders_model.get_reminder_name(),dateTime,reminders_model.return_type(),reminders_model.get_reminder_UUID().toString(),"Work time"};
+                intent.putExtra("oneReminder",array);
+                alarm_manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
+            }
         } else {
             alarm_manager.set(AlarmManager.RTC_WAKEUP,reminders_model.get_reminder_date_time().getTimeInMillis(),pending_intent);
         }

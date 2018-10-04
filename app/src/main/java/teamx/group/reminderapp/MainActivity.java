@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity
         this.recurringReminderPresenter.load_reminders_from_sql();
         this.recurringReminderPresenter=check_reminder_presenter_initial(this.recurringReminderPresenter);
 
-        this.timebox_presenter=new TimeBoxedReminderPresenter(this.getApplicationContext(),profiles_voice);
+        this.timebox_presenter=new TimeBoxedReminderPresenter(this,profiles_voice);
         this.timebox_presenter.load_reminders_from_sql();
         this.timebox_presenter=check_reminder_presenter_initial(this.timebox_presenter);
 

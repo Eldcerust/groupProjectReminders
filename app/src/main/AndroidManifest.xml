@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="teamx.group.reminderapp">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,15 +22,10 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".newBasicReminder" />
         <activity android:name=".newRecurringReminder" />
-        <activity android:name=".newTimeBoxedReminder"></activity>
-        <receiver
-            android:name=".AlarmReceiver"
-            android:enabled="true"
-            android:exported="true"
-            ></receiver>
-        <service
-            android:name="teamx.group.reminderapp.ServiceReminder"
-            android:enabled="true"></service>
+        <activity android:name=".newTimeBoxedReminder" />
+
+        <receiver android:name=".AlarmReceiver" />
+        <service android:name=".ServiceReminder" />
     </application>
 
 </manifest>
